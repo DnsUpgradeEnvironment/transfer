@@ -8,6 +8,7 @@ Created on Wed Jun 29 15:40:46 2022
 import pandas as pd
 import codecs
 import os
+import datetime
 
 path = os.getcwd()
 
@@ -22,11 +23,19 @@ else:
 
 meta = pd.read_excel(path + '\\Exp_meta.xlsx')
 meta.set_index('Tab_4a_Indikatorenblätter.Indikatoren', inplace = True)
-
-links = pd.read_excel(path + '\\Tab_9a_Links.xlsx',  index_col=0)
-orgas = pd.read_excel(path + '\\Tab_8a_Quellen.xlsx',  index_col=0)
 indicators = pd.read_excel(path + '\\Tab_5a_Indikatoren.xlsx',  index_col=0)
 weather = pd.read_excel(path + '\\Tab_5b_Wetter.xlsx',  index_col=0)
+series = pd.read_excel(path + '\\Tab_6a_Zeitreihen.xlsx', index_col=0)
+links = pd.read_excel(path + '\\Tab_9a_Links.xlsx',  index_col=0)
+orgas = pd.read_excel(path + '\\Tab_8a_Quellen.xlsx',  index_col=0)
+categories = pd.read_excel(path + '\\Dic_Disagg_Kategorien.xlsx',  index_col=0)
+units = pd.read_excel(path + '\\Dic_Einheit.xlsx',  index_col=0)
+
+
+# Get current year foe copyright
+currentDateTime = datetime.datetime.now()
+date = currentDateTime.date()
+year = date.strftime("%Y")
 
 # ----- Variables -----------
 
@@ -140,8 +149,8 @@ def getSourcesFct(index, lang):
         d = -1
         appendix = ['','b','c','d','e','f']
         re += '\nsource_active_' + str(c) + ': true'
-        re += '\nsource_organisation_' + str(c) + ': ' + orgas.loc[orgaId, 'Bezeichnung lang ' + lang]
-        re += '\nsource_organisation_' + str(c) + '_short: ' + orgas.loc[orgaId, 'Bezeichnung ' + lang]
+        re += '\nsource_organisation_' + str(c) + ': <a href="' + orgas.loc[orgaId, 'Homepage ' +lang] +'">' + orgas.loc[orgaId, 'Bezeichnung ' + lang] +'</a>'
+        re += '\nsource_organisation_' + str(c) + '_short: <a href="' + orgas.loc[orgaId, 'Homepage ' +lang] +'">' +  orgas.loc[orgaId, 'Bezeichnung lang ' + lang] +'</a>'
         re += '\nsource_organisation_logo_' + str(c) + ': ' + "'" + '<a href="' + getLanguageDependingContent(orgas, orgaId, 'Homepage ', lang) + '"><img src="' + getImgSourcePath(lang) + orgas.loc[orgaId, 'imgId'] + '.png" alt="' + orgas.loc[orgaId, 'Bezeichnung ' + lang] + '" title=" ' + getTitle('linkToSrcOrga', orgas.loc[orgaId, 'Bezeichnung ' + lang], lang) + '" style="height:60px; width:148px; border: transparent"/></a>' + "'"
         for linkId in srcDic[orgaId]:
             d += 1
@@ -184,7 +193,7 @@ def getWeatherFct(index, lang):
             # -- years -- 
             for t in range(7):
                 if not pd.isnull(weather.loc[iNr, 'Jahr t-' + str(t)]):
-                    re += '\nweather_indicator_' + str(c) + '_year_' + appendix[t] + ':  ' + str(weather.loc[iNr, 'Jahr t-' + str(t)])
+                    re += '\nweather_indicator_' + str(c) + '_year_' + appendix[t] + ':  ' + str(int(weather.loc[iNr, 'Jahr t-' + str(t)]))
             re += '\n'
             
             # -- multiple targets? ---
@@ -211,8 +220,7 @@ def getWeatherFct(index, lang):
                 re += '\n' 
             
             
-            else:                                                   # -- multi targets
-            
+            else:                                                   # -- multi targets        
                 re += '\nweather_indicator_' + str(c) + '_target: ' + indicators.loc[iNr, 'Ziel ' + lang]
                 for multiTarget in range(1,4):
                     # -- old multi target? ---
@@ -220,7 +228,7 @@ def getWeatherFct(index, lang):
                     value = weather.loc[iNr, 'Altes Etappenziel ' + str(multiTarget) + ' ' + lang]
                     if not pd.isnull(value):
                         re += '\nweather_indicator_' + str(c) + '_target_' + str(multiTarget) + '_old: ' + value
-                        re += '\nweather_indicator_' + str(c) + '_target_' + str(multiTarget) + '_old_date: ' + str(int(weather.loc[iNr, 'Altes Etappenziel ' + str(multiTarget) + ' gültig bis'])) + '\n'
+                        re += '\nweather_indicator_' + str(c) + '_target_' + str(multiTarget) + '_old_date: ' + str(int(weather.loc[iNr, 'Altes Etappenziel ' + str(multiTarget) + ' gültig bis']))
                         re += '\nweather_indicator_' + str(c) + '_target_' + str(multiTarget) + '_old_year: ' + str(int(weather.loc[iNr, 'Altes Etappenziel ' + str(multiTarget) + ' Jahr'])) + '\n'
                         new = '_new'
                         # -- weather --
@@ -240,6 +248,135 @@ def getWeatherFct(index, lang):
                     re += '\n'
     return re
 
+dicFootnoteLabels = {'Sing De':'Anmerkung',
+               'Plur De': 'Anmerkungen',
+               'Sing En':'Note',
+               'Plur En': 'Notes'}
+
+def getFootnotes(index, lang):
+    footnote = meta.loc[index, 'Fußnote ' + lang]
+    re = ''
+    
+    if pd.isnull(meta.loc[index, 'Fußnote 1 De']):
+        if not pd.isnull(footnote):
+            if '<br>' in footnote:
+                return 'data_footnotes: ' + quotationFct(footnote.replace('<br>', '<br>• '))
+            else:
+                return 'data_footnote: ' + quotationFct(footnote)
+        else:
+            return re
+            
+    else:
+        re += 'footer_fileds:'
+        for i in range(1,3):
+            case = 'Sing '
+            if not pd.isnull(meta.loc[index, 'Fußnote ' + str(i) + ' ' + lang]):
+                spec = meta.loc[index, 'Fußnote ' + str(i) + ' Spezifikation']
+                value = meta.loc[index, 'Fußnote ' + str(i) + ' ' + lang]
+                if not pd.isnull(footnote):
+                    value += footnote + '<br>' + value
+                if '<br>' in value:
+                    case = 'Plur '
+                    value = '<br>' + value
+                
+                if not pd.isnull(spec):
+                    if spec[0] == 'E':
+                        re += '\n  - unit: ' + units.loc[spec, 'Bezeichnung En'].lower()
+                    else:
+                        re += '\n  - series: ' + series.loc[spec, 'Bezeichnung En'].lower()
+                re += '\n    label: ' + dicFootnoteLabels[case + lang]
+                re += '\n    value: ' + value.replace('<br>', '<br>• ')
+                
+    return re
+
+keyDict = {'Grafiktitel': 'graph_title: ',
+           'Grafiktitel spezifiziert': 'graph_titles: ',
+           'Dezimalstellen spezifiziert': 'precision: ',
+           'Achsenlimit Min': 'graph_limits: ',
+           'Achsenlimit Min spezifiziert': 'graph_limits: ',
+           'Achsenlimit Max': '',
+           'Achsenlimit Max spezifiziert': '',
+           'Schrittweite y-Achse': 'graph_stepsize: ',
+           'Schrittweite y-Achse spezifiziert': 'graph_stepsize: '}            
+def getSpecifiedStuff(index, key, upperRange, name, lang):
+    re = ''
+    
+    if key in meta.index:
+        if key + ' ' + lang in meta.columns and key not in meta.columns:
+            key2 = key + ' ' + lang
+        if not pd.isnull(meta.loc[index, key + ' ' + lang]):
+            re += keyDict[key] + meta.loc[index, key]
+    else:
+        re += keyDict[key + ' spezifiziert'] 
+        for i in range(1, upperRange):
+            if key + ' ' + str(i) + ' ' + lang in meta.columns and key + ' ' + str(i) not in meta.columns:
+                key2 = key + ' ' + str(i) + ' ' + lang
+            else:
+                key2 = key + ' ' + str(i)
+            spec = meta.loc[index, key + ' ' + str(i) + ' ' + 'Spezifikation']
+
+            if not pd.isnull(spec):
+                if spec[0] == 'E':
+                    re += '\n  - unit: ' + units.loc[spec, 'Bezeichnung En'].lower() + '\n    '
+                else:
+                    re += '\n  - series: ' + series.loc[spec, 'Bezeichnung En'].lower() + '\n    '
+            elif not pd.isnull(meta.loc[index, key2]):
+                re +=  '\n  - '
+            if not pd.isnull(meta.loc[index, key2]):
+                re += name + ': ' + str(meta.loc[index, key2]) 
+    return re
+        
+
+def getAnnotations(index):
+    re = 'graph_annotations:'
+    for iNr in indicators[indicators.IbNr == meta.loc[index, 'Tab_4a_Indikatorenblätter.IbNr']].index:
+        if iNr in weather.index:
+            for i in ['Zielwert', 'Etappenziel 1 Wert', 'Etappenziel 2 Wert', 'Etappenziel 3 Wert', 'Etappenziel 4 Wert']:
+                if not pd.isnull(weather.loc[iNr, i]):
+                    if meta.loc[index, 'Umschalten zwischen Zeitreihen?']:
+                        re += '\n  - series: ' + indicators.loc[iNr, 'Indikator En'].lower() + '\n    '
+                    else:
+                        re += '  - '
+                    re += 'value: ' + str(weather.loc[iNr, i])
+                    re += '\n    label:'
+                    re += '\n      content: indicator.target_annotation_' + str(int(weather.loc[iNr, i.replace('wert','jahr').replace('Wert','Jahr')]))
+                    re += '\n      position: left'
+                    re += '\n    preset: target_line'
+    return re
+
+def getStackedDisagg(index):
+    if not pd.isnull(meta.loc[page, 'Gestapelte Disaggregation']):
+        return categories.loc[meta.loc[index, 'Gestapelte Disaggregation'], 'Kategorie En'].lower()
+    else:
+        return ''
+
+pageLinkDic = {'Staging':{'De': 'https:/dns-indikatoren.de/status',
+                      'En': 'https://dns-indikatoren.de/en/status'},
+               'Prüf': {'De': 'https:/dnsTestEnvironment.github.io/dns-indicators/status',
+                      'En': 'https://dnsTestEnvironment.github.io/dns-indicators/en/status'}}
+weatherTitleDic= {'Sonne':{'De': 'Text will follow soon',
+                           'En': 'Text will follow soon'},
+                  'Leicht bewölkt':{'De': 'Text will follow soon',
+                           'En': 'Text will follow soon'},
+                  'Wolke':{'De': 'Text will follow soon',
+                           'En': 'Text will follow soon'},
+                  'Blitz':{'De': 'Text will follow soon',
+                           'En': 'Text will follow soon'},}
+def getHeader(index, lang):
+    re = ''
+    for iNr in indicators[indicators.IbNr == meta.loc[index, 'Tab_4a_Indikatorenblätter.IbNr']].index:
+        re += '\n<div>'
+        re += '\n  <div class="my-header">'
+        re += '\n    <h3>' + nanFct(indicators.loc[iNr, 'Indikator kurz ' + lang])
+        if not pd.isnull(weather.loc[iNr, 'Ws t-0']):
+            re += '\n      <a href="' + pageLinkDic[toggle][lang] + '"><img src="https://g205sdgs.github.io/sdg-indicators/public/Wettersymbole/' + weather.loc[iNr, 'Ws t-0'] + '.png" title="' + weatherTitleDic[weather.loc[iNr, 'Ws t-0']][lang] + '" alt="Wettersymbol"/>'
+        re += '\n      </a>'
+        re += '\n    </h3>'
+        re += '\n  </div>'
+        re += '\n  <div class="my-header-note">'
+        re += '\n  </div>'
+        re += '\n</div>'
+    return re
 # --------------------------------------
 for page in meta.index:                                                             # page = 07.1.a,b
     
@@ -271,10 +408,26 @@ for page in meta.index:                                                         
     \nnext: " + getFilename(getPreviousIndex(page, 'next')) + "\
     \n\n#content \
     \ncontent_and_progress: <i>" + contentText['De'] + "</i>" + txtFct(meta.loc[page, 'InhaltDe']) + "\
-    \n\nSources\
-    \n" + getSourcesFct(page, 'De') +"\
+    \n\n#Sources\
+    \n" + getSourcesFct(page, 'De') + "\
     \n\n#Status\
-    \n" + getWeatherFct(page, 'De'))
+    \n" + getWeatherFct(page, 'De') + "\
+    \n\ndata_show_map: " + str(meta.loc[page, 'Karte anzeigen?']).lower() + "\
+    \ncopyright: '&copy; Statistisches Bundesamt (Destatis), " + year + "'\
+    \n\n" + getFootnotes(page, 'De') + "\
+    \n\n" + getSpecifiedStuff(page,'Grafiktitel', 5, 'titel', 'De') + "\
+    \n\n" + getAnnotations(page) + "\
+    \n\n" + getSpecifiedStuff(page, 'Dezimalstellen', 4, 'decimals', '') +"\
+    \n\nspan_gaps: " + str(meta.loc[page, 'Lücken füllen?']).lower() + "\
+    \nshow_line: " + str(meta.loc[page, 'Linie anzeigen?']).lower() + "\
+    \n\ngraph_type: " +  nanFct(meta.loc[page, 'Grafiktyp']) + "\
+    \n\n" + getSpecifiedStuff(page, 'Achsenlimit Min', 4, 'minimum', '') + "\
+    \n" + getSpecifiedStuff(page, 'Achsenlimit Max', 4, 'maximum', '') + "\
+    \n\n" + getSpecifiedStuff(page, 'Schrittweite y-Achse', 4, 'step', '') + "\
+    \n\nstackedBar: " + getStackedDisagg(page) + "\
+    \n\nnational_geographical_coverage: " + nanFct(meta.loc[page,'Geografische Abdeckung De']) + "\
+    \n\n---\
+    " + getHeader(page, 'De'))
     
     fileEn.close()
     file.close()
