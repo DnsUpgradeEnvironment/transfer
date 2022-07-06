@@ -289,41 +289,35 @@ def getFootnotes(index, lang):
                 
     return re
 
-keyDict = {'Grafiktitel': 'graph_title: ',
-           'Grafiktitel spezifiziert': 'graph_titles: ',
-           'Dezimalstellen spezifiziert': 'precision: ',
-           'Achsenlimit Min': 'graph_limits: ',
-           'Achsenlimit Min spezifiziert': 'graph_limits: ',
-           'Achsenlimit Max': '',
-           'Achsenlimit Max spezifiziert': '',
+keyDict = {'Grafiktitel': 'graph_titles: ',
+           'Dezimalstellen': 'precision: ',
+           'Achsenlimit': 'graph_limits: ',
            'Schrittweite y-Achse': 'graph_stepsize: ',
-           'Schrittweite y-Achse spezifiziert': 'graph_stepsize: '}            
-def getSpecifiedStuff(index, key, upperRange, name, lang):
+           'minimum': ' Min',
+           'maximum': ' Max',
+           'title': '',
+           'decimals': '',
+           'step': '',
+           '': ''}            
+def getSpecifiedStuff(index, key, upperRange, nameOne, nameTwo, lang):
     re = ''
-    
-    if key in meta.index:
-        if key + ' ' + lang in meta.columns and key not in meta.columns:
-            key2 = key + ' ' + lang
-        if not pd.isnull(meta.loc[index, key + ' ' + lang]):
-            re += keyDict[key] + meta.loc[index, key]
+    if pd.isnull(meta.loc[index, key + ' 1'+ keyDict[nameOne] + lang]):
+        return ''
     else:
-        re += keyDict[key + ' spezifiziert'] 
+        re += keyDict[key] 
         for i in range(1, upperRange):
-            if key + ' ' + str(i) + ' ' + lang in meta.columns and key + ' ' + str(i) not in meta.columns:
-                key2 = key + ' ' + str(i) + ' ' + lang
-            else:
-                key2 = key + ' ' + str(i)
             spec = meta.loc[index, key + ' ' + str(i) + ' ' + 'Spezifikation']
-
             if not pd.isnull(spec):
                 if spec[0] == 'E':
                     re += '\n  - unit: ' + units.loc[spec, 'Bezeichnung En'].lower() + '\n    '
                 else:
                     re += '\n  - series: ' + series.loc[spec, 'Bezeichnung En'].lower() + '\n    '
-            elif not pd.isnull(meta.loc[index, key2]):
+            elif not pd.isnull(meta.loc[index, key + ' ' + str(i) + keyDict[nameOne] + lang]):
                 re +=  '\n  - '
-            if not pd.isnull(meta.loc[index, key2]):
-                re += name + ': ' + str(meta.loc[index, key2]) 
+            if not pd.isnull(meta.loc[index, key + ' ' + str(i) + keyDict[nameOne] + lang]):
+                re += nameOne + ': ' + str(meta.loc[index, key + ' ' + str(i) + keyDict[nameOne] + lang]) + '\n    '
+            if  nameTwo != '' and not pd.isnull(meta.loc[index, key + ' ' + str(i) + keyDict[nameTwo] + lang]):
+                re += nameTwo + ': ' + str(meta.loc[index, key + ' ' + str(i) + keyDict[nameTwo] + lang]) 
     return re
         
 
@@ -346,7 +340,7 @@ def getAnnotations(index):
 
 def getStackedDisagg(index):
     if not pd.isnull(meta.loc[page, 'Gestapelte Disaggregation']):
-        return categories.loc[meta.loc[index, 'Gestapelte Disaggregation'], 'Kategorie En'].lower()
+        return '\n\nstackedBar: ' + categories.loc[meta.loc[index, 'Gestapelte Disaggregation'], 'Kategorie En'].lower()
     else:
         return ''
 
@@ -415,16 +409,15 @@ for page in meta.index:                                                         
     \n\ndata_show_map: " + str(meta.loc[page, 'Karte anzeigen?']).lower() + "\
     \ncopyright: '&copy; Statistisches Bundesamt (Destatis), " + year + "'\
     \n\n" + getFootnotes(page, 'De') + "\
-    \n\n" + getSpecifiedStuff(page,'Grafiktitel', 5, 'titel', 'De') + "\
+    \n\n" + getSpecifiedStuff(page,'Grafiktitel', 5, 'title', '', ' De') + "\
     \n\n" + getAnnotations(page) + "\
-    \n\n" + getSpecifiedStuff(page, 'Dezimalstellen', 4, 'decimals', '') +"\
+    \n\n" + getSpecifiedStuff(page, 'Dezimalstellen', 4, 'decimals', '', '') +"\
     \n\nspan_gaps: " + str(meta.loc[page, 'Lücken füllen?']).lower() + "\
     \nshow_line: " + str(meta.loc[page, 'Linie anzeigen?']).lower() + "\
     \n\ngraph_type: " +  nanFct(meta.loc[page, 'Grafiktyp']) + "\
-    \n\n" + getSpecifiedStuff(page, 'Achsenlimit Min', 4, 'minimum', '') + "\
-    \n" + getSpecifiedStuff(page, 'Achsenlimit Max', 4, 'maximum', '') + "\
-    \n\n" + getSpecifiedStuff(page, 'Schrittweite y-Achse', 4, 'step', '') + "\
-    \n\nstackedBar: " + getStackedDisagg(page) + "\
+    \n\n" + getSpecifiedStuff(page, 'Achsenlimit', 4, 'minimum', 'maximum', '') + "\
+    \n\n" + getSpecifiedStuff(page, 'Schrittweite y-Achse', 4, 'step', '', '') + "\
+    " + getStackedDisagg(page) + "\
     \n\nnational_geographical_coverage: " + nanFct(meta.loc[page,'Geografische Abdeckung De']) + "\
     \n\n---\
     " + getHeader(page, 'De'))
