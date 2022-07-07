@@ -203,8 +203,8 @@ def getWeatherFct(index, lang):
                 value = weather.loc[iNr, 'Altes Ziel ' + lang]
                 if not pd.isnull(value):
                     new = '_new'
-                    re += '\nweather_indicator_' + str(c) + '_target_old: ' + indicators.loc[iNr, 'Altes Ziel ' + lang] + '\n'
-                    re += '\nweather_indicator_' + str(c) + '_target_old_date: ' + indicators.loc[iNr, 'Altes Ziel gültig bis'] + '\n'
+                    re += '\nweather_indicator_' + str(c) + '_target_old: ' + weather.loc[iNr, 'Altes Ziel ' + lang] + '\n'
+                    re += '\nweather_indicator_' + str(c) + '_target_old_date: ' + str(weather.loc[iNr, 'Altes Ziel gültig bis']) + '\n'
                     # -- weather --
                     for t in range(7):
                         value = weather.loc[iNr, 'Ws altes Ziel t-' + str(t)]

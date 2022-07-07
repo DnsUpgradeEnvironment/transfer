@@ -38,6 +38,12 @@ geoCodes = {'A_LAENDER_BW':'code08',
             'A_LAENDER_SH':'code01',
             'A_LAENDER_TH':'code16'}
 
+def getFilename(index):
+    filename = index.lstrip('0').replace('.','-').replace(',','')                    # filename = 7-2-ab
+    if filename[-1].isnumeric():
+        filename += '-a'
+    return 'indicator_' + filename
+
 #since meta contains one dataset per indicator we`re using meta`s index as loop variable
 for page in meta.index: 
     #ibNr is present in both, meta and data, so we`re using it to gt the relevant part of data                                                            
@@ -57,9 +63,9 @@ for page in meta.index:
             #get an additional column with geo-codes for map building if 'Länder' is one of the disaggregations
             if disagg == 'K_LAENDER':
                 columns.append('GeoCode')
-            #if we activate 'seriesToggle' for this indicator we need the column head to be 'Series' not 'time series'
-            if meta.loc[page, 'Umschalten zwischen Zeitreihen?']:
-                columns [2] = 'Series'
+    #if we activate 'seriesToggle' for this indicator we need the column head to be 'Series' not 'time series'
+    if meta.loc[page, 'Umschalten zwischen Zeitreihen?']:
+        columns [2] = 'Series'
         
     
     #create a new dataframe with target shape
@@ -77,7 +83,7 @@ for page in meta.index:
                         line['Year'] = str(year)
                     elif column == 'Units':
                         line[column] = units.loc[pageData.loc[DNr, 'Einheit'],'Einheit En'].lower()
-                    elif column == 'time series':
+                    elif column == 'time series' or column == 'Series':
                         line[column] = series.loc[pageData.loc[DNr, 'ZNr'], 'Bezeichnung En'].lower()
                     for d in ['1', '2']:
                         if column == pageData.loc[DNr, 'Disaggregation ' + d + ' Kategorie']:
@@ -96,7 +102,12 @@ for page in meta.index:
         newCols = cols[:cols.index('Value')] + cols[cols.index('Value') + 1:] + cols[cols.index('Value'):cols.index('Value') + 1]
         df = df[newCols]
         
+        #delete columns that contain only same values to not show disaggregations where there isn`t anything to select
+        for column in df.columns:
+            if not (column == 'Year' or column == 'Units' or column == 'Series' or column == 'Value') and (df[column] == df[column][0]).all():
+                df.pop(column)
+        
         #create a csv file from dataframe
-        df.to_csv( targetPath + page + '.csv',  encoding='utf-8', index=False)
+        df.to_csv( targetPath + getFilename(page) + '.csv',  encoding='utf-8', index=False)
                     
         
