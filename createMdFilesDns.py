@@ -285,7 +285,7 @@ def getFootnotes(index, lang):
                     else:
                         re += '\n  - series: ' + series.loc[spec, 'Bezeichnung En'].lower()
                 re += '\n    label: ' + dicFootnoteLabels[case + lang]
-                re += '\n    value: ' + value.replace('<br>', '<br>• ')
+                re += '\n    value: ' + txtFct(value.replace('<br>', '<br>• '))
                 
     return re
 
