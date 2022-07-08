@@ -97,7 +97,6 @@ def getAnnotations(index):
         if iNr in weather.index:
             for i in ['Zielwert', 'Etappenziel 1 Wert', 'Etappenziel 2 Wert', 'Etappenziel 3 Wert', 'Etappenziel 4 Wert']:
                 if not pd.isnull(weather.loc[iNr, i]):
-                    re += 'graph_annotations:'
                     if meta.loc[index, 'Umschalten zwischen Zeitreihen?']:
                         re += '\n  - series: ' + indicators.loc[iNr, 'Indikator En'].lower() + '\n    '
                     else:
@@ -107,6 +106,8 @@ def getAnnotations(index):
                     re += '\n      content: indicator.target_annotation_' + str(int(weather.loc[iNr, i.replace('wert','jahr').replace('Wert','Jahr')]))
                     re += '\n      position: left'
                     re += '\n    preset: target_line'
+    if len(re) > 0:
+        re = 'graph_annotations:' + re
     return re
 
 def getFilename(index):
@@ -236,12 +237,12 @@ def getSourcesFct(index, lang):
         d = -1
         appendix = ['','b','c','d','e','f']
         re += '\nsource_active_' + str(c) + ': true'
-        re += '\nsource_organisation_' + str(c) + ': <a href="' + orgas.loc[orgaId, 'Homepage ' +lang] +'">' + orgas.loc[orgaId, 'Bezeichnung ' + lang] +'</a>'
-        re += '\nsource_organisation_' + str(c) + '_short: <a href="' + orgas.loc[orgaId, 'Homepage ' +lang] +'">' +  orgas.loc[orgaId, 'Bezeichnung lang ' + lang] +'</a>'
+        re += '\nsource_organisation_' + str(c) + ": '" + '<a href="' + orgas.loc[orgaId, 'Homepage ' +lang] +'">' + orgas.loc[orgaId, 'Bezeichnung ' + lang] +"</a>'"
+        re += '\nsource_organisation_' + str(c) + "_short: '" + '<a href="' + orgas.loc[orgaId, 'Homepage ' +lang] +'">' +  orgas.loc[orgaId, 'Bezeichnung lang ' + lang] +"</a>'"
         re += '\nsource_organisation_logo_' + str(c) + ': ' + "'" + '<a href="' + getLanguageDependingContent(orgas, orgaId, 'Homepage ', lang) + '"><img src="' + getImgSourcePath(lang) + orgas.loc[orgaId, 'imgId'] + '.png" alt="' + orgas.loc[orgaId, 'Bezeichnung ' + lang] + '" title=" ' + getTitle('linkToSrcOrga', orgas.loc[orgaId, 'Bezeichnung ' + lang], lang) + '" style="height:60px; width:148px; border: transparent"/></a>' + "'"
         for linkId in srcDic[orgaId]:
             d += 1
-            re += '\nsource_url_' + str(c) + appendix[d] + ': ' + getLanguageDependingContent(links, linkId, 'Link ', lang)
+            re += '\nsource_url_' + str(c) + appendix[d] + ": '" + getLanguageDependingContent(links, linkId, 'Link ', lang) + "'"
             re += '\nsource_url_text_' + str(c) + appendix[d] + ': ' + txtFct(links.loc[linkId, 'Text ' + lang])
         re += '\n'  
     return re
