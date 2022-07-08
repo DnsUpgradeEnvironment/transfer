@@ -9,9 +9,11 @@ import pandas as pd
 import numpy as np
 import os
 
+#get the current path and the path where to save the files
 path = os.getcwd()
 targetPath = path.replace('\\transfer', '\dns-data\data\\')
 
+#read some xlsx files
 meta = pd.read_excel(path + '\\Exp_meta.xlsx')
 meta.set_index('Tab_4a_Indikatorenblätter.Indikatoren', inplace = True)
 indicators = pd.read_excel(path + '\\Tab_5a_Indikatoren.xlsx',  index_col=0)
@@ -21,6 +23,7 @@ expressions = pd.read_excel(path + '\\Dic_Disagg_Ausprägungen.xlsx',  index_col
 units = pd.read_excel(path + '\\Dic_Einheit.xlsx',  index_col=0)
 data = pd.read_excel(path + '\\Exp_data.xlsx',  index_col=0)
 
+#for maps
 geoCodes = {'A_LAENDER_BW':'code08',
             'A_LAENDER_BY':'code09',
             'A_LAENDER_BE':'code11',
@@ -38,15 +41,16 @@ geoCodes = {'A_LAENDER_BW':'code08',
             'A_LAENDER_SH':'code01',
             'A_LAENDER_TH':'code16'}
 
+# change the index of meta ("07.2.a,b") to become the filename of format "7-2-ab"
 def getFilename(index):
-    filename = index.lstrip('0').replace('.','-').replace(',','')                    # filename = 7-2-ab
+    filename = index.lstrip('0').replace('.','-').replace(',','')                    
     if filename[-1].isnumeric():
         filename += '-a'
     return 'indicator_' + filename
 
 #since meta contains one dataset per indicator we`re using meta`s index as loop variable
 for page in meta.index: 
-    #ibNr is present in both, meta and data, so we`re using it to gt the relevant part of data                                                            
+    #ibNr is present in both, meta and data, so we`re using it to get the relevant part of data                                                            
     ibNr = meta.loc[page, 'Tab_4a_Indikatorenblätter.IbNr']
     #now pageData only consist of the page`s datasets
     pageData = data[data.IbNr == ibNr]
