@@ -67,7 +67,7 @@ def nanFct(inpt):
         return inpt
 
 def quotationFct(inpt):
-    if ':' in inpt and not ((inpt[0] == "'" and inpt[-1] =="'") or (inpt[0] == '"' and inpt[-1] == '"')):
+    if (':' in inpt or str(inpt).replace('.','').isnumeric()) and not ((inpt[0] == "'" and inpt[-1] =="'") or (inpt[0] == '"' and inpt[-1] == '"')):
         if "'" in inpt:
             return '"' + inpt + '"'
         else:
@@ -92,8 +92,9 @@ for x in dic:
     file.write('\n#' + dic[x]['title De'] + '\n')
     fileEn.write('\n#' + dic[x]['title En'] + '\n')
     for dataset in dic[x]['df'].index:
-        file.write(dic[x]['df'].loc[dataset, dic[x]['key'] + ' En'].lower() + ': ' + txtFct(dic[x]['df'].loc[dataset, dic[x]['key'] + ' De'] )+ '\n')
-        fileEn.write(dic[x]['df'].loc[dataset, dic[x]['key'] + ' En'].lower() + ': ' + txtFct(dic[x]['df'].loc[dataset, dic[x]['key'] + ' En']) + '\n')
+        if not pd.isnull(dic[x]['df'].loc[dataset, dic[x]['key'] + ' En']):
+            file.write(txtFct(dic[x]['df'].loc[dataset, dic[x]['key'] + ' En'].lower()) + ': ' + txtFct(dic[x]['df'].loc[dataset, dic[x]['key'] + ' De'] )+ '\n')
+            fileEn.write(txtFct(dic[x]['df'].loc[dataset, dic[x]['key'] + ' En'].lower()) + ': ' + txtFct(dic[x]['df'].loc[dataset, dic[x]['key'] + ' En']) + '\n')
 
 file.close()    
 fileEn.close()    

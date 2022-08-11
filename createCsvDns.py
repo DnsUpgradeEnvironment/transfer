@@ -17,7 +17,6 @@ targetPath = path.replace('\\transfer', '\dns-data\data\\')
 meta = pd.read_excel(path + '\\Exp_meta.xlsx')
 meta.set_index('Tab_4a_Indikatorenblätter.Indikatoren', inplace = True)
 indicators = pd.read_excel(path + '\\Tab_5a_Indikatoren.xlsx',  index_col=0)
-series = pd.read_excel(path + '\\Tab_6a_Zeitreihen.xlsx', index_col=0)
 categories = pd.read_excel(path + '\\Dic_Disagg_Kategorien.xlsx',  index_col=0)
 expressions = pd.read_excel(path + '\\Dic_Disagg_Ausprägungen.xlsx',  index_col=0)
 units = pd.read_excel(path + '\\Dic_Einheit.xlsx',  index_col=0)
@@ -67,9 +66,17 @@ for page in meta.index:
             #get an additional column with geo-codes for map building if 'Länder' is one of the disaggregations
             if disagg == 'K_LAENDER':
                 columns.append('GeoCode')
+    
     #if we activate 'seriesToggle' for this indicator we need the column head to be 'Series' not 'time series'
     if meta.loc[page, 'Umschalten zwischen Zeitreihen?']:
-        columns [2] = 'Series'
+        columns[2] = 'Series'
+    
+    #Note that the column 'time series' will contain the indicators titel unless there is a series defined as disaggregation category
+    if 'K_SERIES' in list(pageData['Disaggregation 1 Kategorie']):
+        try:
+            columns.remove('time series')
+        except ValueError:
+            columns.remove('Series')
         
     
     #create a new dataframe with target shape
@@ -87,17 +94,26 @@ for page in meta.index:
                         line['Year'] = str(year)
                     elif column == 'Units':
                         line[column] = units.loc[pageData.loc[DNr, 'Einheit'],'Einheit En'].lower()
-                    elif column == 'time series' or column == 'Series':
-                        line[column] = series.loc[pageData.loc[DNr, 'ZNr'], 'Bezeichnung En'].lower()
+                    elif (column == 'time series' or column == 'Series'):
+                        if 'K_SERIES' in list(pageData['Disaggregation 1 Kategorie']):
+                            line[column] = expressions.loc[pageData.loc[DNr, 'Disaggregation 1 Ausprägung'], 'Ausprägung En'].lower()
+                        else:
+                            line[column] = indicators.loc[pageData.loc[DNr, 'INr'], 'Indikator En'].lower()
                     for d in ['1', '2']:
                         if column == pageData.loc[DNr, 'Disaggregation ' + d + ' Kategorie']:
-                            line[categories.loc[column, 'Kategorie En'].lower()] = expressions.loc[pageData.loc[DNr, 'Disaggregation ' + d + ' Ausprägung'], 'Ausprägung En'].lower()
+                            if meta.loc[page, 'Umschalten zwischen Zeitreihen?'] and column == 'K_SERIES':
+                                print("e")
+                                line['Series'] = expressions.loc[pageData.loc[DNr, 'Disaggregation ' + d + ' Ausprägung'], 'Ausprägung En'].lower()
+                            else:   
+                                line[categories.loc[column, 'Kategorie En'].lower()] = expressions.loc[pageData.loc[DNr, 'Disaggregation ' + d + ' Ausprägung'], 'Ausprägung En'].lower()
                             if column == 'K_LAENDER':
                                 line['GeoCodes'] = geoCodes[pageData.loc[DNr, 'Disaggregation ' + d + ' Ausprägung']]
                     if column == 'Value':
                         line[column] = pageData.loc[DNr, str(year)]
             if len(line) > 0:
                 targetData.append(line)
+    if page == '02.1.a':
+        z = targetData
     if len(targetData) > 0:
         df = pd.DataFrame(targetData)
         

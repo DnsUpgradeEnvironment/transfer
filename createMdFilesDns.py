@@ -23,12 +23,13 @@ else:
 
 meta = pd.read_excel(path + '\\Exp_meta.xlsx')
 meta.set_index('Tab_4a_Indikatorenblätter.Indikatoren', inplace = True)
+data = pd.read_excel(path + '\\Exp_data.xlsx',  index_col=0)
 indicators = pd.read_excel(path + '\\Tab_5a_Indikatoren.xlsx',  index_col=0)
 weather = pd.read_excel(path + '\\Tab_5b_Wetter.xlsx',  index_col=0)
-series = pd.read_excel(path + '\\Tab_6a_Zeitreihen.xlsx', index_col=0)
-links = pd.read_excel(path + '\\Tab_9a_Links.xlsx',  index_col=0)
-orgas = pd.read_excel(path + '\\Tab_8a_Quellen.xlsx',  index_col=0)
+links = pd.read_excel(path + '\\Tab_8a_Links.xlsx',  index_col=0)
+orgas = pd.read_excel(path + '\\Tab_7a_Quellen.xlsx',  index_col=0)
 categories = pd.read_excel(path + '\\Dic_Disagg_Kategorien.xlsx',  index_col=0)
+expressions = pd.read_excel(path + '\\Dic_Disagg_Ausprägungen.xlsx', index_col=0)
 units = pd.read_excel(path + '\\Dic_Einheit.xlsx',  index_col=0)
 
 
@@ -47,16 +48,18 @@ dicFootnoteLabels = {'Sing De':'Anmerkung',
                'Sing En':'Note',
                'Plur En': 'Notes'}
 
-contentText = {'De': 'Text aus dem Indikatorenbericht 2021',
-               'En': 'Text from the Indicator Report 2021'}
+contentText = {'De': 'Text aus dem Indikatorenbericht 2021 ',
+               'En': 'Text from the Indicator Report 2021 '}
 
 keyDict = {'Grafiktitel': 'graph_titles: ',
+           'Grafiktyp': 'graph_types: ',
            'Dezimalstellen': 'precision: ',
            'Achsenlimit': 'graph_limits: ',
            'Schrittweite y-Achse': 'graph_stepsize: ',
            'minimum': ' Min',
            'maximum': ' Max',
            'title': '',
+           'type': '',
            'decimals': '',
            'step': '',
            '': ''}
@@ -103,7 +106,8 @@ def getAnnotations(index):
                         re += '\n  - '
                     re += 'value: ' + str(weather.loc[iNr, i])
                     re += '\n    label:'
-                    re += '\n      content: indicator.target_annotation_' + str(int(weather.loc[iNr, i.replace('wert','jahr').replace('Wert','Jahr')]))
+                    if not pd.isnull(weather.loc[iNr, i.replace('wert','jahr').replace('Wert','Jahr')]):
+                        re += '\n      content: indicator.target_annotation_' + str(int(weather.loc[iNr, i.replace('wert','jahr').replace('Wert','Jahr')]))
                     re += '\n      position: left'
                     re += '\n    preset: target_line'
     if len(re) > 0:
@@ -142,10 +146,14 @@ def getFootnotes(index, lang):
                     value = '<br>' + value
                 
                 if not pd.isnull(spec):
-                    if spec[0] == 'E':
+                    if spec[0:2] == 'E_':
                         re += '\n  - unit: ' + units.loc[spec, 'Bezeichnung En'].lower() + '\n    '
+                    elif spec == 'K_SERIES':
+                        re += '\n  - series: ' + expressions.loc[spec, 'Ausprägung En'].lower() + '\n    '
+                    elif spec[0:2] == 'Z_':
+                        re += '\n  - series: ' + indicators.loc[spec, 'Indikator En'].lower() + '\n    '
                     else:
-                        re += '\n  - series: ' + series.loc[spec, 'Bezeichnung En'].lower() + '\n    '
+                        print("Error: Wrong key at footer field specificaion. ", index)
                 else:
                         re += '\n  - '
                 re += 'label: ' + txtFct(dicFootnoteLabels[case + lang])
@@ -154,13 +162,18 @@ def getFootnotes(index, lang):
 
 def getHeader(index, lang):
     re = ''
+    wth = ''
     for iNr in indicators[indicators.IbNr == meta.loc[index, 'Tab_4a_Indikatorenblätter.IbNr']].index:
         re += '\n<div>'
         re += '\n  <div class="my-header">'
         re += '\n    <h3>' + nanFct(indicators.loc[iNr, 'Indikator kurz ' + lang])
         if not pd.isnull(weather.loc[iNr, 'Ws t-0']):
-            re += '\n      <a href="' + pageLinkDic[toggle][lang] + '"><img src="https://g205sdgs.github.io/sdg-indicators/public/Wettersymbole/' + weather.loc[iNr, 'Ws t-0'] + '.png" title="' + weatherTitleDic[weather.loc[iNr, 'Ws t-0']][lang] + '" alt="Wettersymbol"/>'
-        re += '\n      </a>'
+            wth = weather.loc[iNr, 'Ws t-0']
+        elif not pd.isnull(weather.loc[iNr, 'Etappenziel 1 Ws t-0']):
+            wth = weather.loc[iNr, 'Etappenziel 1 Ws t-0']
+        if wth != '':
+            re += '\n      <a href="' + pageLinkDic[toggle][lang] + '"><img src="https://g205sdgs.github.io/sdg-indicators/public/Wettersymbole/' + wth + '.png" title="' + weatherTitleDic[wth][lang] + '" alt="Wettersymbol"/>'
+            re += '\n      </a>'
         re += '\n    </h3>'
         re += '\n  </div>'
         re += '\n  <div class="my-header-note">'
@@ -213,6 +226,12 @@ def getTargetId(BNr):
 def getTitle(case, content, lang):
     return titleDic[case][lang]['pre'] + content + titleDic[case][lang]['post']
 
+def getSomething(key, value):
+    if not pd.isnull(value):
+        return key + ': '+ value
+    else:
+        return ''
+    
 def getSourcesFct(index, lang):
     re = ''
     srcDic = {}
@@ -232,7 +251,6 @@ def getSourcesFct(index, lang):
                     srcDic[qNr] = []
 
     for orgaId in srcDic:
-        print(orgaId)
         c += 1
         d = -1
         appendix = ['','b','c','d','e','f']
@@ -253,15 +271,21 @@ def getSpecifiedStuff(index, key, upperRange, nameOne, nameTwo, lang):
         return ''
     elif key == 'Grafiktitel' and pd.isnull(meta.loc[index, 'Grafiktitel 1 Spezifikation']):
         re += 'graph_title: ' + meta.loc[index, 'Grafiktitel 1' + lang]
+    elif key == 'Grafiktyp' and pd.isnull(meta.loc[index, 'Grafiktyp 1 Spezifikation']):
+        re += 'graph_type: ' + meta.loc[index, 'Grafiktyp 1']
     else:
         re += keyDict[key] 
         for i in range(1, upperRange):
             spec = meta.loc[index, key + ' ' + str(i) + ' ' + 'Spezifikation']
             if not pd.isnull(spec):
-                if spec[0] == 'E':
+                if spec[0:2] == 'E_':
                     re += '\n  - unit: ' + units.loc[spec, 'Bezeichnung En'].lower() + '\n    '
+                elif spec == 'K_SERIES':
+                    re += '\n  - series: ' + expressions.loc[spec, 'Ausprägung En'].lower() + '\n    '
+                elif spec[0] == 'Z':
+                    re += '\n  - series: ' + indicators.loc[spec, 'Indikator En'].lower() + '\n    '
                 else:
-                    re += '\n  - series: ' + series.loc[spec, 'Bezeichnung En'].lower() + '\n    '
+                    print('Error at specification of ', key)
             elif not pd.isnull(meta.loc[index, key + ' ' + str(i) + keyDict[nameOne] + lang]):
                 re +=  '\n  - '
             if not pd.isnull(meta.loc[index, key + ' ' + str(i) + keyDict[nameOne] + lang]):
@@ -276,6 +300,33 @@ def getStackedDisagg(index):
     else:
         return ''
     
+def getStartValues(index):
+    re = ''
+    allStartDatasets = data[(data['IbNr'] == meta.loc[index, 'Tab_4a_Indikatorenblätter.IbNr']) & (data['Beim Start anzeigen?'])]
+    allreadyMentioned = []
+    if len(allStartDatasets) > 0:
+        re += '\n\ndata_start_values: '
+        for INr in list(set(allStartDatasets.INr)):
+            if not 'K_SERIES' in list(allStartDatasets['Disaggregation 1 Kategorie']):
+                re += '\n  - field: time series'
+                re += '\n    value: ' + indicators.loc[INr, 'Indikator En'].lower()
+        for DNr in allStartDatasets.index:
+            cat1 = allStartDatasets.loc[DNr, 'Disaggregation 1 Kategorie']
+            exp1 = allStartDatasets.loc[DNr, 'Disaggregation 1 Ausprägung']
+            cat2 = allStartDatasets.loc[DNr, 'Disaggregation 2 Kategorie']
+            exp2 = allStartDatasets.loc[DNr, 'Disaggregation 2 Ausprägung']
+            if not (pd.isnull(cat1) or (cat1 + exp1) in allreadyMentioned):
+                re += '\n  - field: ' + categories.loc[cat1, 'Kategorie En'].lower()
+                re += '\n    value: ' + expressions.loc[exp1, 'Ausprägung En'].lower()
+                allreadyMentioned.append(cat1 + exp1)
+            if not (pd.isnull(cat2) or (cat2 + exp2) in allreadyMentioned):
+                re += '\n  - field: ' + categories.loc[cat2, 'Kategorie En'].lower()
+                re += '\n    value: ' + expressions.loc[exp2, 'Ausprägung En'].lower() 
+                allreadyMentioned.append(cat2 + exp2)
+        if meta.loc[index, 'Umschalten zwischen Zeitreihen?']:
+            re = re.replace('field: time series', 'field: Series')
+    return re
+    
 def getWeatherFct(index, lang):
     c = 0
     re = ''
@@ -283,14 +334,17 @@ def getWeatherFct(index, lang):
         if iNr in weather.index:
             c += 1
             appendix = ['a','b','c','d','e','f','g','h']
-            re += '\nweather_active_' + str(c) + ': true'
+            if lang == 'De':
+                re += '\nweather_active_' + str(c) + ': true'
             re += '\nweather_indicator_' + str(c) + ': ' + indicators.loc[iNr, 'Indikator'] + ' ' + indicators.loc[iNr, 'Indikator ' + lang]
-            
-            # -- years -- 
-            for t in range(7):
-                if not pd.isnull(weather.loc[iNr, 'Jahr t-' + str(t)]):
-                    re += '\nweather_indicator_' + str(c) + '_year_' + appendix[t] + ": '" + str(int(weather.loc[iNr, 'Jahr t-' + str(t)])) + "'"
-            re += '\n'
+            if lang == 'De':
+                # -- years -- 
+                for t in range(7):
+                    if not pd.isnull(weather.loc[iNr, 'Jahr t-' + str(t)]):
+                        re += '\nweather_indicator_' + str(c) + '_year_' + appendix[t] + ": '" + str(int(weather.loc[iNr, 'Jahr t-' + str(t)])) + "'"
+                    elif t == 0:
+                        re += '\nweather_indicator_' + str(c) + '_year_' + appendix[t] + ": '-'"                    
+                re += '\n'
             
             # -- multiple targets? ---
             if pd.isnull(weather.loc[iNr, 'Etappenziel 1 Jahr']):   # -- single target
@@ -300,48 +354,61 @@ def getWeatherFct(index, lang):
                 if not pd.isnull(value):
                     new = '_new'
                     re += '\nweather_indicator_' + str(c) + '_target_old: ' + weather.loc[iNr, 'Altes Ziel ' + lang] + '\n'
-                    re += '\nweather_indicator_' + str(c) + "_target_old_date: '" + str(weather.loc[iNr, 'Altes Ziel gültig bis']) + "'\n"
+                    if lang == 'De':
+                        re += '\nweather_indicator_' + str(c) + "_target_old_date: '" + str(int(weather.loc[iNr, 'Altes Ziel gültig bis'])) + "'\n"
+                        # -- weather --
+                        for t in range(7):
+                            value = weather.loc[iNr, 'Ws altes Ziel t-' + str(t)]
+                            if not pd.isnull(value):
+                                re += '\nweather_indicator_' + str(c) + '_old_item_' + appendix[t] + ': ' + value
+                            elif t == 0:
+                                re += '\nweather_indicator_' + str(c) + '_old_item_' + appendix[t] + ': Keine Bewertung möglich'
+                        re += '\n'
+                re += '\nweather_indicator_' + str(c) + '_target' + new + ': ' + indicators.loc[iNr, 'Ziel ' + lang] + '\n'
+                if lang == 'De':
                     # -- weather --
                     for t in range(7):
-                        value = weather.loc[iNr, 'Ws altes Ziel t-' + str(t)]
+                        value = weather.loc[iNr, 'Ws t-' + str(t)]
                         if not pd.isnull(value):
-                            re += '\nweather_indicator_' + str(c) + '_old_item_' + appendix[t] + ': ' + value
-                    re += '\n'
-                re += '\nweather_indicator_' + str(c) + '_target' + new + ': ' + indicators.loc[iNr, 'Ziel ' + lang] + '\n'
-                # -- weather --
-                for t in range(7):
-                    value = weather.loc[iNr, 'Ws t-' + str(t)]
-                    if not pd.isnull(value):
-                        re += '\nweather_indicator_' + str(c) + new + '_item_' + appendix[t] + ': ' + value
-                re += '\n' 
-            
-            
+                            re += '\nweather_indicator_' + str(c) + new + '_item_' + appendix[t] + ': ' + value
+                        elif t == 0:
+                            re += '\nweather_indicator_' + str(c) + new + '_item_' + appendix[t] + ': Keine Bewertung möglich'                     
+                    re += '\n' 
+                       
             else:                                                   # -- multi targets        
                 re += '\nweather_indicator_' + str(c) + '_target: ' + indicators.loc[iNr, 'Ziel ' + lang]
-                for multiTarget in range(1,4):
+                for multiTarget in range(1,5):
                     # -- old multi target? ---
                     new = ''
                     value = weather.loc[iNr, 'Altes Etappenziel ' + str(multiTarget) + ' ' + lang]
                     if not pd.isnull(value):
                         re += '\nweather_indicator_' + str(c) + '_target_' + str(multiTarget) + '_old: ' + value
-                        re += '\nweather_indicator_' + str(c) + '_target_' + str(multiTarget) + "_old_date: '" + str(int(weather.loc[iNr, 'Altes Etappenziel ' + str(multiTarget) + ' gültig bis'])) + "'"
-                        re += '\nweather_indicator_' + str(c) + '_target_' + str(multiTarget) + "_old_year: '" + str(int(weather.loc[iNr, 'Altes Etappenziel ' + str(multiTarget) + ' Jahr'])) + "'\n"
+                        if lang == 'De':
+                            re += '\nweather_indicator_' + str(c) + '_target_' + str(multiTarget) + "_old_date: '" + str(int(weather.loc[iNr, 'Altes Etappenziel ' + str(multiTarget) + ' gültig bis'])) + "'"
+                            re += '\nweather_indicator_' + str(c) + '_target_' + str(multiTarget) + "_old_year: '" + str(int(weather.loc[iNr, 'Altes Etappenziel ' + str(multiTarget) + ' Jahr'])) + "'\n"
                         new = '_new'
-                        # -- weather --
-                        for t in range(7):
-                            value = weather.loc[iNr, 'Altes Etappenziel ' + str(multiTarget) + ' Ws t-' + str(t)]
-                            if not pd.isnull(value):
-                                re += '\nweather_indicator_' + str(c) + '_target_' + str(multiTarget) + '_old_item_' + appendix[t] + ':  ' + value
-                        re += '\n'
-                                           
-                    re += '\nweather_indicator_' + str(c) + '_target_' + str(multiTarget) + new + ': ' + weather.loc[iNr, 'Etappenziel ' + str(multiTarget) + ' ' + lang]
-                    re += '\nweather_indicator_' + str(c) + '_target_' + str(multiTarget) + new + "_year: '" + str(int(weather.loc[iNr, 'Etappenziel ' + str(multiTarget) + ' Jahr'])) + "'\n"
-                    # -- weather --
-                    for t in range(7):
-                        value = weather.loc[iNr, 'Etappenziel ' + str(multiTarget) + ' Ws t-' + str(t)]
-                        if not pd.isnull(value):
-                            re += '\nweather_indicator_' + str(c) + '_target_' + str(multiTarget) + new + '_item_' + appendix[t] + ':  ' + value
-                    re += '\n'
+                        if lang == 'De':
+                            # -- weather --
+                            for t in range(7):
+                                value = weather.loc[iNr, 'Altes Etappenziel ' + str(multiTarget) + ' Ws t-' + str(t)]
+                                if not pd.isnull(value):
+                                    re += '\nweather_indicator_' + str(c) + '_target_' + str(multiTarget) + '_old_item_' + appendix[t] + ': ' + value
+                                elif t == 0:
+                                    re += '\nweather_indicator_' + str(c) + '_target_' + str(multiTarget) + '_old_item_' + appendix[t] + ': Keine Bewertung möglich'            
+                            re += '\n'
+                    
+                    if not pd.isnull(weather.loc[iNr, 'Etappenziel ' + str(multiTarget) + ' ' + lang]):                       
+                        re += '\nweather_indicator_' + str(c) + '_target_' + str(multiTarget) + new + ': ' + weather.loc[iNr, 'Etappenziel ' + str(multiTarget) + ' ' + lang]
+                        if lang == 'De':
+                            re += '\nweather_indicator_' + str(c) + '_target_' + str(multiTarget) + new + "_year: '" + str(int(weather.loc[iNr, 'Etappenziel ' + str(multiTarget) + ' Jahr'])) + "'\n"
+                            # -- weather --
+                            for t in range(7):
+                                value = weather.loc[iNr, 'Etappenziel ' + str(multiTarget) + ' Ws t-' + str(t)]
+                                if not pd.isnull(value):
+                                    re += '\nweather_indicator_' + str(c) + '_target_' + str(multiTarget) + new + '_item_' + appendix[t] + ': ' + value
+                                elif t == 0:
+                                    re += '\nweather_indicator_' + str(c) + '_target_' + str(multiTarget) + new + '_item_' + appendix[t] + ': Keine Bewertung möglich'
+                            re += '\n'
     return re
 
 
@@ -417,11 +484,12 @@ for page in meta.index:                                                         
     \n\n" + getSpecifiedStuff(page, 'Dezimalstellen', 4, 'decimals', '', '') +"\
     \n\nspan_gaps: " + str(meta.loc[page, 'Lücken füllen?']).lower() + "\
     \nshow_line: " + str(meta.loc[page, 'Linie anzeigen?']).lower() + "\
-    \n\ngraph_type: " +  nanFct(meta.loc[page, 'Grafiktyp']) + "\
+    \n\n" +  getSpecifiedStuff(page, 'Grafiktyp', 3, 'type', '', '') + "\
+    " + getStartValues(page) +"\
     \n\n" + getSpecifiedStuff(page, 'Achsenlimit', 4, 'minimum', 'maximum', '') + "\
     \n\n" + getSpecifiedStuff(page, 'Schrittweite y-Achse', 4, 'step', '', '') + "\
     " + getStackedDisagg(page) + "\
-    \n\nnational_geographical_coverage: " + nanFct(meta.loc[page,'Geografische Abdeckung De']) + "\
+    \n\n" + getSomething('national_geographical_coverage', meta.loc[page,'Geografische Abdeckung De']) + "\
     \n---\n\n" + getHeader(page, 'De'))
     
     fileEn.write("---\n\nlanguage: en\
@@ -439,7 +507,8 @@ for page in meta.index:                                                         
     \ncopyright: '&copy; Federal Statistical Office (Destatis), " + year + "'\
     \n\n" + getFootnotes(page, 'En') + "\
     \n\n" + getSpecifiedStuff(page,'Grafiktitel', 5, 'title', '', ' En') + "\
-    \n\nnational_geographical_coverage: " + nanFct(meta.loc[page,'Geografische Abdeckung En']) + "\
+    \n\n" + getSomething('national_geographical_coverage', meta.loc[page,'Geografische Abdeckung En']) + "\
+    \n" + getWeatherFct(page, 'En') +"\
     \n---\n\n" + getHeader(page, 'En'))
     
     fileEn.close()
