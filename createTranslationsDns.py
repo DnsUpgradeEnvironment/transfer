@@ -27,9 +27,8 @@ meta = pd.read_excel(path + '\\Exp_meta.xlsx')
 meta.set_index('Tab_4a_Indikatorenblätter.Indikatoren', inplace = True)
 indicators = pd.read_excel(path + '\\Tab_5a_Indikatoren.xlsx',  index_col=0)
 weather = pd.read_excel(path + '\\Tab_5b_Wetter.xlsx',  index_col=0)
-series = pd.read_excel(path + '\\Tab_6a_Zeitreihen.xlsx', index_col=0)
-links = pd.read_excel(path + '\\Tab_9a_Links.xlsx',  index_col=0)
-orgas = pd.read_excel(path + '\\Tab_8a_Quellen.xlsx',  index_col=0)
+links = pd.read_excel(path + '\\Tab_8a_Links.xlsx',  index_col=0)
+orgas = pd.read_excel(path + '\\Tab_7a_Quellen.xlsx',  index_col=0)
 
 data = pd.read_excel(path + '\\Exp_data.xlsx',  index_col=0)
 
@@ -53,11 +52,18 @@ dic = {'a': {'title De': 'Ausprägungen',
        'c': {'title De': 'Einheiten',
              'title En': 'Units',
              'df': units,
-             'key': 'Einheit'},
-       'd': {'title De': 'Zeitreihen',
-             'title En': 'Time series',
-             'df': series,
-             'key': 'Bezeichnung'}}
+             'key': 'Einheit'}}
+
+additions = {'a':{'key':['total'],
+                  'De':['Insgesamt'],
+                  'En':['Total']},
+             'b':{'key':[],
+                  'De':[],
+                  'En':[]},
+             'c':{'key':[],
+                  'De':[],
+                  'En':[]}}
+
 replaceDic = {' %': '&nbsp;%'}
 
 def nanFct(inpt):
@@ -95,7 +101,13 @@ for x in dic:
         if not pd.isnull(dic[x]['df'].loc[dataset, dic[x]['key'] + ' En']):
             file.write(txtFct(dic[x]['df'].loc[dataset, dic[x]['key'] + ' En'].lower()) + ': ' + txtFct(dic[x]['df'].loc[dataset, dic[x]['key'] + ' De'] )+ '\n')
             fileEn.write(txtFct(dic[x]['df'].loc[dataset, dic[x]['key'] + ' En'].lower()) + ': ' + txtFct(dic[x]['df'].loc[dataset, dic[x]['key'] + ' En']) + '\n')
-
+    
+    if x == 'a':
+        file.write('\n# Additions\n')
+        fileEn.write('\n# Additions\n')
+    for i in range(len(additions[x]['key'])):
+        file.write(txtFct(additions[x]['key'][i-1]) + ': ' + txtFct(additions[x]['De'][i-1]) + '\n')
+        fileEn.write(txtFct(additions[x]['key'][i-1]) + ': ' + txtFct(additions[x]['En'][i-1]) + '\n')
 file.close()    
 fileEn.close()    
     

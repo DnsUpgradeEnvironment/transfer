@@ -22,6 +22,9 @@ expressions = pd.read_excel(path + '\\Dic_Disagg_Ausprägungen.xlsx',  index_col
 units = pd.read_excel(path + '\\Dic_Einheit.xlsx',  index_col=0)
 data = pd.read_excel(path + '\\Exp_data.xlsx',  index_col=0)
 
+geoCodesKreis = pd.read_excel(path + '\\Dic_GeoCodes.xlsx',  index_col=2)
+
+
 #for maps
 geoCodes = {'A_LAENDER_BW':'code08',
             'A_LAENDER_BY':'code09',
@@ -60,11 +63,11 @@ for page in meta.index:
     #default columns are
     columns = ['Year', 'Units', 'time series', 'Value']
     #add all disaggregations that are present for this indicator to the column list
-    for disagg in set(list(pageData['Disaggregation 1 Kategorie']) + list(pageData['Disaggregation 2 Kategorie'])):
+    for disagg in set(list(pageData['Disaggregation 1 Kategorie']) + list(pageData['Disaggregation 2 Kategorie']) + list(pageData['Disaggregation 3 Kategorie'])):
         if not pd.isnull(disagg) and not disagg in columns:
             columns.append(disagg)
             #get an additional column with geo-codes for map building if 'Länder' is one of the disaggregations
-            if disagg == 'K_LAENDER':
+            if disagg == 'K_LAENDER' or disagg == 'K_KREIS':
                 columns.append('GeoCode')
     
     #if we activate 'seriesToggle' for this indicator we need the column head to be 'Series' not 'time series'
@@ -99,15 +102,19 @@ for page in meta.index:
                             line[column] = expressions.loc[pageData.loc[DNr, 'Disaggregation 1 Ausprägung'], 'Ausprägung En'].lower()
                         else:
                             line[column] = indicators.loc[pageData.loc[DNr, 'INr'], 'Indikator En'].lower()
-                    for d in ['1', '2']:
+                    for d in ['1', '2', '3']:
                         if column == pageData.loc[DNr, 'Disaggregation ' + d + ' Kategorie']:
                             if meta.loc[page, 'Umschalten zwischen Zeitreihen?'] and column == 'K_SERIES':
-                                print("e")
                                 line['Series'] = expressions.loc[pageData.loc[DNr, 'Disaggregation ' + d + ' Ausprägung'], 'Ausprägung En'].lower()
                             else:   
                                 line[categories.loc[column, 'Kategorie En'].lower()] = expressions.loc[pageData.loc[DNr, 'Disaggregation ' + d + ' Ausprägung'], 'Ausprägung En'].lower()
                             if column == 'K_LAENDER':
                                 line['GeoCodes'] = geoCodes[pageData.loc[DNr, 'Disaggregation ' + d + ' Ausprägung']]
+                            elif column == 'K_KREIS':
+                                geo = str(geoCodesKreis.loc[pageData.loc[DNr, 'Disaggregation ' + d + ' Ausprägung'],'Code'])
+                                if len(geo) == 4:
+                                    geo = '0' + geo
+                                line['GeoCodes'] = 'code' + geo
                     if column == 'Value':
                         line[column] = pageData.loc[DNr, str(year)]
             if len(line) > 0:

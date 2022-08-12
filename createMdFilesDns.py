@@ -100,7 +100,11 @@ def getAnnotations(index):
         if iNr in weather.index:
             for i in ['Zielwert', 'Etappenziel 1 Wert', 'Etappenziel 2 Wert', 'Etappenziel 3 Wert', 'Etappenziel 4 Wert']:
                 if not pd.isnull(weather.loc[iNr, i]):
-                    if meta.loc[index, 'Umschalten zwischen Zeitreihen?']:
+                    #case: we have K_SERIES as Disaggregation category for this indicator and want to show the annotation only for one series
+                    if not pd.isnull(weather.loc[iNr,'Spezifikation']):
+                        re += '\n  - series: ' + expressions.loc[weather.loc[iNr, 'Spezifikation'], 'Ausprägung En'].lower() + '\n    '
+                        
+                    elif meta.loc[index, 'Umschalten zwischen Zeitreihen?']:
                         re += '\n  - series: ' + indicators.loc[iNr, 'Indikator En'].lower() + '\n    '
                     else:
                         re += '\n  - '
@@ -148,9 +152,9 @@ def getFootnotes(index, lang):
                 if not pd.isnull(spec):
                     if spec[0:2] == 'E_':
                         re += '\n  - unit: ' + units.loc[spec, 'Bezeichnung En'].lower() + '\n    '
-                    elif spec == 'K_SERIES':
+                    elif spec[0:2] == 'A_':
                         re += '\n  - series: ' + expressions.loc[spec, 'Ausprägung En'].lower() + '\n    '
-                    elif spec[0:2] == 'Z_':
+                    elif spec[0] == 'Z':
                         re += '\n  - series: ' + indicators.loc[spec, 'Indikator En'].lower() + '\n    '
                     else:
                         print("Error: Wrong key at footer field specificaion. ", index)
@@ -280,7 +284,7 @@ def getSpecifiedStuff(index, key, upperRange, nameOne, nameTwo, lang):
             if not pd.isnull(spec):
                 if spec[0:2] == 'E_':
                     re += '\n  - unit: ' + units.loc[spec, 'Bezeichnung En'].lower() + '\n    '
-                elif spec == 'K_SERIES':
+                elif spec[0:2] == 'A_':
                     re += '\n  - series: ' + expressions.loc[spec, 'Ausprägung En'].lower() + '\n    '
                 elif spec[0] == 'Z':
                     re += '\n  - series: ' + indicators.loc[spec, 'Indikator En'].lower() + '\n    '
@@ -315,6 +319,8 @@ def getStartValues(index):
             exp1 = allStartDatasets.loc[DNr, 'Disaggregation 1 Ausprägung']
             cat2 = allStartDatasets.loc[DNr, 'Disaggregation 2 Kategorie']
             exp2 = allStartDatasets.loc[DNr, 'Disaggregation 2 Ausprägung']
+            cat3 = allStartDatasets.loc[DNr, 'Disaggregation 3 Kategorie']
+            exp3 = allStartDatasets.loc[DNr, 'Disaggregation 3 Ausprägung']
             if not (pd.isnull(cat1) or (cat1 + exp1) in allreadyMentioned):
                 re += '\n  - field: ' + categories.loc[cat1, 'Kategorie En'].lower()
                 re += '\n    value: ' + expressions.loc[exp1, 'Ausprägung En'].lower()
@@ -323,6 +329,10 @@ def getStartValues(index):
                 re += '\n  - field: ' + categories.loc[cat2, 'Kategorie En'].lower()
                 re += '\n    value: ' + expressions.loc[exp2, 'Ausprägung En'].lower() 
                 allreadyMentioned.append(cat2 + exp2)
+            if not (pd.isnull(cat3) or (cat3 + exp3) in allreadyMentioned):
+                re += '\n  - field: ' + categories.loc[cat3, 'Kategorie En'].lower()
+                re += '\n    value: ' + expressions.loc[exp3, 'Ausprägung En'].lower() 
+                allreadyMentioned.append(cat3 + exp3)
         if meta.loc[index, 'Umschalten zwischen Zeitreihen?']:
             re = re.replace('field: time series', 'field: Series')
     return re
