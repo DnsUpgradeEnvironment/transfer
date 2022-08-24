@@ -52,15 +52,22 @@ dic = {'a': {'title De': 'Ausprägungen',
        'c': {'title De': 'Einheiten',
              'title En': 'Units',
              'df': units,
-             'key': 'Einheit'}}
+             'key': 'Einheit'},
+       'd': {'title De': 'Indikatoren',
+             'title En': 'Indicators',
+             'df': indicators,
+             'key': 'Indikator'}}
 
-additions = {'a':{'key':['total'],
-                  'De':['Insgesamt'],
-                  'En':['Total']},
+additions = {'a':{'key':['total','year'],
+                  'De':['Insgesamt','Jahr'],
+                  'En':['Total','Year']},
              'b':{'key':[],
                   'De':[],
                   'En':[]},
              'c':{'key':[],
+                  'De':[],
+                  'En':[]},
+             'd':{'key':[],
                   'De':[],
                   'En':[]}}
 

@@ -9,6 +9,7 @@ import pandas as pd
 import codecs
 import os
 import datetime
+import fnmatch
 
 path = os.getcwd()
 
@@ -111,7 +112,10 @@ def getAnnotations(index):
                     re += 'value: ' + str(weather.loc[iNr, i])
                     re += '\n    label:'
                     if not pd.isnull(weather.loc[iNr, i.replace('wert','jahr').replace('Wert','Jahr')]):
-                        re += '\n      content: indicator.target_annotation_' + str(int(weather.loc[iNr, i.replace('wert','jahr').replace('Wert','Jahr')]))
+                        if len(set(indicators[indicators.IbNr == meta.loc[index, 'Tab_4a_Indikatorenblätter.IbNr']].index)) > 1 and not meta.loc[index, 'Umschalten zwischen Zeitreihen?']:
+                            re += '\n      content: indicator.target_annotation_' + weather.loc[iNr,'Indikator'].replace('.','_') + '_' + str(int(weather.loc[iNr, i.replace('wert','jahr').replace('Wert','Jahr')]))
+                        else:
+                            re += '\n      content: indicator.target_annotation_' + str(int(weather.loc[iNr, i.replace('wert','jahr').replace('Wert','Jahr')]))
                     re += '\n      position: left'
                     re += '\n    preset: target_line'
     if len(re) > 0:
@@ -130,6 +134,7 @@ def getFootnotes(index, lang):
     
     if pd.isnull(meta.loc[index, 'Fußnote 1 De']):
         if not pd.isnull(footnote):
+            footnote = footnote.replace('\n','<br>')
             if '<br>' in footnote:
                 return 'data_footnotes: ' + quotationFct(footnote.replace('<br>', '<br>• '))
             else:
@@ -198,7 +203,7 @@ def getLanguageDependingContent(df, index, key, lang):
         otherLang = 'De'
     if not pd.isnull(df.loc[index, key + lang]):
         return df.loc[index, key + lang]
-    elif not pd.isnul(df.loc[index, key + otherLang]):
+    elif not pd.isnull(df.loc[index, key + otherLang]):
         return df.loc[index, key + otherLang]
     else:
         return ''
@@ -274,7 +279,27 @@ def getSpecifiedStuff(index, key, upperRange, nameOne, nameTwo, lang):
     if pd.isnull(meta.loc[index, key + ' 1'+ keyDict[nameOne] + lang]):
         return ''
     elif key == 'Grafiktitel' and pd.isnull(meta.loc[index, 'Grafiktitel 1 Spezifikation']):
-        re += 'graph_title: ' + meta.loc[index, 'Grafiktitel 1' + lang]
+        # graph_title would be overwritten by Seriesn names
+        if meta.loc[index, 'Umschalten zwischen Zeitreihen?']:
+            ibNr = meta.loc[index, 'Tab_4a_Indikatorenblätter.IbNr']
+            allSeries = list(set(data[data['IbNr'] == ibNr]['INr'])) 
+            
+            allKSeries = list(set(data[data['IbNr'] == ibNr]['Disaggregation 1 Ausprägung']))
+            allKSeries = [x for x in allKSeries if not pd.isnull(x)]
+            allKSeries = fnmatch.filter(allKSeries,'A_SERIES_*')
+            if len(allKSeries) > 0:
+                allSeries = allKSeries
+            re += 'graph_titles:'
+            for i in allSeries:
+                if i[0] == 'Z':
+                    re += '\n  - series: ' + indicators.loc[i, 'Indikator En'].lower()
+                elif i[0:2] == 'A_':
+                    re += '\n  - series: ' + expressions.loc[i, 'Ausprägung En'].lower()
+                re += '\n    title: ' + meta.loc[index, 'Grafiktitel 1' + lang]
+                    
+            
+        else:
+            re += 'graph_title: ' + meta.loc[index, 'Grafiktitel 1' + lang]
     elif key == 'Grafiktyp' and pd.isnull(meta.loc[index, 'Grafiktyp 1 Spezifikation']):
         re += 'graph_type: ' + meta.loc[index, 'Grafiktyp 1']
     else:
@@ -311,7 +336,7 @@ def getStartValues(index):
     if len(allStartDatasets) > 0:
         re += '\n\ndata_start_values: '
         for INr in list(set(allStartDatasets.INr)):
-            if not 'K_SERIES' in list(allStartDatasets['Disaggregation 1 Kategorie']):
+            if not 'K_SERIES' in list(allStartDatasets['Disaggregation 1 Kategorie']) and not pd.isnull(indicators.loc[INr, 'Indikator En']):
                 re += '\n  - field: time series'
                 re += '\n    value: ' + indicators.loc[INr, 'Indikator En'].lower()
         for DNr in allStartDatasets.index:
@@ -341,7 +366,7 @@ def getWeatherFct(index, lang):
     c = 0
     re = ''
     for iNr in indicators[indicators.IbNr == meta.loc[index, 'Tab_4a_Indikatorenblätter.IbNr']].index:
-        if iNr in weather.index:
+        if iNr in weather.index and not pd.isnull(indicators.loc[iNr, 'Indikator ' + lang]):
             c += 1
             appendix = ['a','b','c','d','e','f','g','h']
             if lang == 'De':

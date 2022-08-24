@@ -100,7 +100,7 @@ for page in meta.index:
                     elif (column == 'time series' or column == 'Series'):
                         if 'K_SERIES' in list(pageData['Disaggregation 1 Kategorie']):
                             line[column] = expressions.loc[pageData.loc[DNr, 'Disaggregation 1 Ausprägung'], 'Ausprägung En'].lower()
-                        else:
+                        elif not pd.isnull(indicators.loc[pageData.loc[DNr, 'INr'], 'Indikator En']):
                             line[column] = indicators.loc[pageData.loc[DNr, 'INr'], 'Indikator En'].lower()
                     for d in ['1', '2', '3']:
                         if column == pageData.loc[DNr, 'Disaggregation ' + d + ' Kategorie']:
@@ -109,12 +109,12 @@ for page in meta.index:
                             else:   
                                 line[categories.loc[column, 'Kategorie En'].lower()] = expressions.loc[pageData.loc[DNr, 'Disaggregation ' + d + ' Ausprägung'], 'Ausprägung En'].lower()
                             if column == 'K_LAENDER':
-                                line['GeoCodes'] = geoCodes[pageData.loc[DNr, 'Disaggregation ' + d + ' Ausprägung']]
+                                line['GeoCode'] = geoCodes[pageData.loc[DNr, 'Disaggregation ' + d + ' Ausprägung']]
                             elif column == 'K_KREIS':
                                 geo = str(geoCodesKreis.loc[pageData.loc[DNr, 'Disaggregation ' + d + ' Ausprägung'],'Code'])
                                 if len(geo) == 4:
                                     geo = '0' + geo
-                                line['GeoCodes'] = 'code' + geo
+                                line['GeoCode'] = 'code' + geo
                     if column == 'Value':
                         line[column] = pageData.loc[DNr, str(year)]
             if len(line) > 0:
