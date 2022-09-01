@@ -56,9 +56,9 @@ dic = {'a': {'title De': 'Ausprägungen',
        'd': {'title De': 'Indikatoren',
              'title En': 'Indicators',
              'df': indicators,
-             'key': 'Indikator'}}
+             'key': 'Bezeichnung für Plattform'}}
 
-additions = {'a':{'key':['total','year'],
+additions = {'a':{'key':['total','Year'],
                   'De':['Insgesamt','Jahr'],
                   'En':['Total','Year']},
              'b':{'key':[],
@@ -71,7 +71,22 @@ additions = {'a':{'key':['total','year'],
                   'De':[],
                   'En':[]}}
 
-replaceDic = {' %': '&nbsp;%'}
+
+replaceDic = {'De':{' %': '&nbsp;%',
+              'CO2': u'CO\u2082',
+              #'PM10':'PM<sub>10</sub>',
+              'PM10': u'PM\u2081\u2080',
+              #'PM2,5':'PM<sub>2,5</sub>',
+              'PM2,5': u'PM\u2082,\u2085',
+              'PM2.5': u'PM\u2082,\u2085',
+              'PM₅﮳₂': u'PM\u2082,\u2085'},
+              'En':{'CO2': u'CO\u2082',
+              #'PM10':'PM<sub>10</sub>',
+              'PM10': u'PM\u2081\u2080',
+              #'PM2,5':'PM<sub>2,5</sub>',
+              'PM2,5': u'PM\u2082.\u2085',
+              'PM2.5': u'PM\u2082.\u2085',
+              'PM₅﮳₂': u'PM\u2082.\u2085'}}
 
 def nanFct(inpt):
     if pd.isnull(inpt):
@@ -80,7 +95,7 @@ def nanFct(inpt):
         return inpt
 
 def quotationFct(inpt):
-    if (':' in inpt or str(inpt).replace('.','').isnumeric()) and not ((inpt[0] == "'" and inpt[-1] =="'") or (inpt[0] == '"' and inpt[-1] == '"')):
+    if (':' in inpt or str(inpt).replace('.','').isnumeric() or str(inpt).replace(' ','').isnumeric()) and not ((inpt[0] == "'" and inpt[-1] =="'") or (inpt[0] == '"' and inpt[-1] == '"')):
         if "'" in inpt:
             return '"' + inpt + '"'
         else:
@@ -88,15 +103,15 @@ def quotationFct(inpt):
     else:
         return inpt
 
-def replaceFct(inpt):
-    for i in replaceDic:
+def replaceFct(inpt, lang):
+    for i in replaceDic[lang]:
         if i in inpt:
-            inpt = inpt.replace(i, replaceDic[i])
+            inpt = inpt.replace(i, replaceDic[lang][i])
     return inpt
         
 
-def txtFct (inpt):
-    return quotationFct(replaceFct(nanFct(inpt)))
+def txtFct (inpt, lang):
+    return quotationFct(replaceFct(nanFct(inpt), lang))
 
 
 
@@ -106,15 +121,15 @@ for x in dic:
     fileEn.write('\n#' + dic[x]['title En'] + '\n')
     for dataset in dic[x]['df'].index:
         if not pd.isnull(dic[x]['df'].loc[dataset, dic[x]['key'] + ' En']):
-            file.write(txtFct(dic[x]['df'].loc[dataset, dic[x]['key'] + ' En'].lower()) + ': ' + txtFct(dic[x]['df'].loc[dataset, dic[x]['key'] + ' De'] )+ '\n')
-            fileEn.write(txtFct(dic[x]['df'].loc[dataset, dic[x]['key'] + ' En'].lower()) + ': ' + txtFct(dic[x]['df'].loc[dataset, dic[x]['key'] + ' En']) + '\n')
+            file.write(txtFct(dic[x]['df'].loc[dataset, dic[x]['key'] + ' En'].lower(), 'De') + ': ' + txtFct(dic[x]['df'].loc[dataset, dic[x]['key'] + ' De'], 'De')+ '\n')
+            fileEn.write(txtFct(dic[x]['df'].loc[dataset, dic[x]['key'] + ' En'].lower(), 'En') + ': ' + txtFct(dic[x]['df'].loc[dataset, dic[x]['key'] + ' En'],'En') + '\n')
     
     if x == 'a':
         file.write('\n# Additions\n')
         fileEn.write('\n# Additions\n')
     for i in range(len(additions[x]['key'])):
-        file.write(txtFct(additions[x]['key'][i-1]) + ': ' + txtFct(additions[x]['De'][i-1]) + '\n')
-        fileEn.write(txtFct(additions[x]['key'][i-1]) + ': ' + txtFct(additions[x]['En'][i-1]) + '\n')
+        file.write(txtFct(additions[x]['key'][i-1], 'De') + ': ' + txtFct(additions[x]['De'][i-1], 'De') + '\n')
+        fileEn.write(txtFct(additions[x]['key'][i-1], 'En') + ': ' + txtFct(additions[x]['En'][i-1], 'En') + '\n')
 file.close()    
 fileEn.close()    
     

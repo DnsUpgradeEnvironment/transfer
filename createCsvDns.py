@@ -46,10 +46,19 @@ geoCodes = {'A_LAENDER_BW':'code08',
 # change the index of meta ("07.2.a,b") to become the filename of format "7-2-ab"
 def getFilename(index):
     filename = index.lstrip('0').replace('.','-').replace(',','')                    
-    if filename[-1].isnumeric():
-        filename += '-a'
+    #if filename[-1].isnumeric():
+    #   filename += '-a'
     return 'indicator_' + filename
 
+def txtFct(string):
+    if string == '1.000':
+        if "'" in string:
+            return '"' + string + '"'
+        else:
+            return "'" + string + "'"
+    else:
+        return string
+    
 #since meta contains one dataset per indicator we`re using meta`s index as loop variable
 for page in meta.index: 
     #ibNr is present in both, meta and data, so we`re using it to get the relevant part of data                                                            
@@ -75,10 +84,10 @@ for page in meta.index:
         columns[2] = 'Series'
     
     #Note that the column 'time series' will contain the indicators titel unless there is a series defined as disaggregation category
-    if 'K_SERIES' in list(pageData['Disaggregation 1 Kategorie']):
-        try:
+    if 'K_SERIES' in list(pageData['Disaggregation 1 Kategorie']) and len(list(set(pageData['INr']))) == 1:
+        if not meta.loc[page, 'Umschalten zwischen Zeitreihen?']:
             columns.remove('time series')
-        except ValueError:
+        else:
             columns.remove('Series')
         
     
@@ -89,19 +98,26 @@ for page in meta.index:
     targetData = []     
     for DNr in pageData.index:  #Dnr is the ID of a dataset that can contain values for year x ... y. 
                                 #Every dataset is a unique combination of 'time series', disaggregation expression 1', 'disaggregation expression 2' and 'unit'
-        for year in range(2000, 2030):  #loop through the years for every possible combination
+        for year in np.arange(1990, 2025, 0.5):  #loop through the years for every possible combination
+            if year%1 == 0:
+                year = int(year)
+            else:
+                year = str(year)
             line = {}
-            if not pd.isnull(pageData.loc[DNr, str(year)]):   #fill the dictionaries           
+            if not pd.isnull(pageData.loc[DNr, str(year).replace('.',',')]):   #fill the dictionaries           
                 for column in columns:
                     if column == 'Year':
                         line['Year'] = str(year)
-                    elif column == 'Units':
-                        line[column] = units.loc[pageData.loc[DNr, 'Einheit'],'Einheit En'].lower()
+                    elif column == 'Units' and not pd.isnull(units.loc[pageData.loc[DNr, 'Einheit'],'Einheit En']):
+                        line[column] = txtFct(units.loc[pageData.loc[DNr, 'Einheit'],'Einheit En'].lower())
                     elif (column == 'time series' or column == 'Series'):
                         if 'K_SERIES' in list(pageData['Disaggregation 1 Kategorie']):
-                            line[column] = expressions.loc[pageData.loc[DNr, 'Disaggregation 1 Ausprägung'], 'Ausprägung En'].lower()
-                        elif not pd.isnull(indicators.loc[pageData.loc[DNr, 'INr'], 'Indikator En']):
-                            line[column] = indicators.loc[pageData.loc[DNr, 'INr'], 'Indikator En'].lower()
+                            try:
+                                line[column] = expressions.loc[pageData.loc[DNr, 'Disaggregation 1 Ausprägung'], 'Ausprägung En'].lower()
+                            except KeyError:
+                                line[column] = indicators.loc[pageData.loc[DNr, 'INr'], 'Bezeichnung für Plattform En'].lower()
+                        elif not pd.isnull(indicators.loc[pageData.loc[DNr, 'INr'], 'Bezeichnung für Plattform En']):
+                            line[column] = indicators.loc[pageData.loc[DNr, 'INr'], 'Bezeichnung für Plattform En'].lower()
                     for d in ['1', '2', '3']:
                         if column == pageData.loc[DNr, 'Disaggregation ' + d + ' Kategorie']:
                             if meta.loc[page, 'Umschalten zwischen Zeitreihen?'] and column == 'K_SERIES':
@@ -116,11 +132,9 @@ for page in meta.index:
                                     geo = '0' + geo
                                 line['GeoCode'] = 'code' + geo
                     if column == 'Value':
-                        line[column] = pageData.loc[DNr, str(year)]
+                        line[column] = pageData.loc[DNr, str(year).replace('.',',')]
             if len(line) > 0:
                 targetData.append(line)
-    if page == '02.1.a':
-        z = targetData
     if len(targetData) > 0:
         df = pd.DataFrame(targetData)
         
