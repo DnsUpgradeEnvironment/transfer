@@ -146,10 +146,20 @@ def addLinkFct(text, lang):
 transl = {'De': 'Ziel', 'En': 'Target', 'DeEveryYear': 'Jährliches Ziel', 'EnEveryYear': 'Constant target'}
 def getAnnotations(index, lang):
     re = ''
+    values = []
+    allreadyMentioned = []
+    # first look what tragte values there are to avoid printig multiple lines ober one another
     for iNr in indicators[indicators.IbNr == meta.loc[index, 'Tab_4a_Indikatorenblätter.IbNr']].index:
         if iNr in weather.index:
             for i in ['Zielwert', 'Etappenziel 1 Wert', 'Etappenziel 2 Wert', 'Etappenziel 3 Wert', 'Etappenziel 4 Wert']:
                 if not pd.isnull(weather.loc[iNr, i]):
+                    values.append(str(weather.loc[iNr, i]))
+    
+    for iNr in indicators[indicators.IbNr == meta.loc[index, 'Tab_4a_Indikatorenblätter.IbNr']].index:
+        if iNr in weather.index:
+            for i in ['Zielwert', 'Etappenziel 1 Wert', 'Etappenziel 2 Wert', 'Etappenziel 3 Wert', 'Etappenziel 4 Wert']:
+                if not (pd.isnull(weather.loc[iNr, i]) or str(weather.loc[iNr, i]) in allreadyMentioned):
+                    allreadyMentioned.append(str(weather.loc[iNr, i]))
                     #case: we have K_SERIES as Disaggregation category for this indicator and want to show the annotation only for one series
                     if not pd.isnull(weather.loc[iNr,'Spezifikation']):
                         re += '\n  - series: ' + expressions.loc[weather.loc[iNr, 'Spezifikation'], 'Ausprägung En'].lower() + '\n    '
@@ -160,14 +170,13 @@ def getAnnotations(index, lang):
                         re += '\n  - '
                     re += 'value: ' + str(weather.loc[iNr, i])
                     re += '\n    label:'
-                    if not (pd.isnull(weather.loc[iNr, i.replace('wert','jahr').replace('Wert','Jahr')]) or weather.loc[iNr, i.replace('wert','jahr').replace('Wert','Jahr')] == 0):
-                        re += '\n      content: ' + transl[lang] + ' ' + str(int(weather.loc[iNr, i.replace('wert','jahr').replace('Wert','Jahr')]))
-                        if len(set(indicators[indicators.IbNr == meta.loc[index, 'Tab_4a_Indikatorenblätter.IbNr']].index)) > 1 and not meta.loc[index, 'Umschalten zwischen Zeitreihen?']:
-                            re += ' - ' + indicators.loc[iNr,'Indikator kurz ' + lang] 
+                    year = weather.loc[iNr, i.replace('wert','jahr').replace('Wert','Jahr')]
+                    if not (pd.isnull(year) or year == 0):
+                        re += '\n      content: ' + transl[lang] + ' ' + str(int(year))
                     else:
                         re += '\n      content: ' + transl[lang + 'EveryYear']
-                        if len(set(indicators[indicators.IbNr == meta.loc[index, 'Tab_4a_Indikatorenblätter.IbNr']].index)) > 1 and not meta.loc[index, 'Umschalten zwischen Zeitreihen?']:
-                            re += ' - ' + indicators.loc[iNr,'Indikator kurz ' + lang] 
+                    if len(set(indicators[indicators.IbNr == meta.loc[index, 'Tab_4a_Indikatorenblätter.IbNr']].index)) > 1 and not meta.loc[index, 'Umschalten zwischen Zeitreihen?'] and not values.count(str(weather.loc[iNr, i])) > 1:
+                        re += ' - ' + indicators.loc[iNr,'Indikator kurz ' + lang] 
                     re += '\n      position: left'
                     re += '\n    preset: target_line'
     if len(re) > 0:
