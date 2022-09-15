@@ -52,10 +52,7 @@ def getFilename(index):
 
 def txtFct(string):
     if string == '1.000':
-        if "'" in string:
-            return '"' + string + '"'
-        else:
-            return "'" + string + "'"
+        return '1 000'
     else:
         return string
     

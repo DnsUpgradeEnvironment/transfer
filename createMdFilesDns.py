@@ -13,7 +13,8 @@ import fnmatch
 
 path = os.getcwd()
 
-toggle = 'Prüf'
+toggle = 'Upgrade'
+#toggle = 'Prüf'
 #toggle = 'Staging'
 
 if toggle == 'Staging':
@@ -68,10 +69,12 @@ keyDict = {'Grafiktitel': 'graph_titles: ',
            '': '',
            'value': ''}
 
-pageLinkDic = {'Staging':{'De': 'https:/dns-indikatoren.de/status',
-                      'En': 'https://dns-indikatoren.de/en/status'},
-               'Prüf': {'De': 'https:/dnsTestEnvironment.github.io/dns-indicators/status',
-                      'En': 'https://dnsTestEnvironment.github.io/dns-indicators/en/status'}}
+pageLinkDic = {'Staging':{'De': 'www.dns-indikatoren.de/status',
+                      'En': 'www.dns-indikatoren.de/en/status'},
+               'Prüf': {'De': 'www.dnsTestEnvironment.github.io/dns-indicators/status',
+                      'En': 'www.dnsTestEnvironment.github.io/dns-indicators/en/status'},
+               'Upgrade': {'De': 'http://www.dnsUpgradeEnvironment.github.io/dns-indicators/status',
+                      'En': 'www.dnsUpgradeEnvironment.github.io/dns-indicators/en/status'}}
 
 replaceDic = {'De':
                   {' %': '&nbsp;%',
@@ -90,7 +93,11 @@ replaceDic = {'De':
                    'SO2': u'SO\u2082',
                    'NOx': 'NO\u2093',
                    'NH3': 'NH\u2083',
-                   'PM2.5': u'PM\u2082,\u2085'},
+                   'PM2.5': u'PM\u2082,\u2085',
+                   'CH4': u'CH\u2084',
+                   'N2O': u'N\u2082O',
+                   'SF6': u'SF\u2086',
+                   'NF3': u'NF\u2083'},
               'En':
                   {' %': '&nbsp;%',
                    '1.000':'1&nbsp;000',
@@ -107,7 +114,11 @@ replaceDic = {'De':
                    'SO2': u'SO\u2082',
                    'NOx': 'NO\u2093',
                    'NH3': 'NH\u2083',
-                   'PM2.5': u'PM\u2082.\u2085'}}
+                   'PM2.5': u'PM\u2082.\u2085',
+                   'CH4': u'CH\u2084',
+                   'N2O': u'N\u2082O',
+                   'SF6': u'SF\u2086',
+                   'NF3': u'NF\u2083'}}
 
 titleDic = {'linkToSrcOrga':{
                 'De':{
@@ -120,14 +131,33 @@ titleDic = {'linkToSrcOrga':{
                     }
                 }
             }
-weatherTitleDic= {'Sonne':{'De': 'Text will follow soon',
-                           'En': 'Text will follow soon'},
-                  'Leicht bewölkt':{'De': 'Text will follow soon',
-                           'En': 'Text will follow soon'},
-                  'Wolke':{'De': 'Text will follow soon',
-                           'En': 'Text will follow soon'},
-                  'Blitz':{'De': 'Text will follow soon',
-                           'En': 'Text will follow soon'}}
+weatherTitleDic= {'K':
+                      {'Sonne':{'De': 'Bei Fortsetzung der Entwicklung würde der Zielwert erreicht oder um weniger als 5 % der Differenz zwischen Zielwert und aktuellem Wert verfehlt.',
+                               'En': 'Bei Fortsetzung der Entwicklung würde der Zielwert erreicht oder um weniger als 5 % der Differenz zwischen Zielwert und aktuellem Wert verfehlt.'},
+                      'Leicht bewölkt':{'De': 'Bei Fortsetzung der Entwicklung würde das Ziel voraussichtlich um mindestens 5 %, aber maximal um 20 % der Differenz zwischen Zielwert und aktuellem Wert verfehlt.',
+                               'En': 'If the development continues, the target would probably be missed by at least 5%, but by a maximum of 20% of the difference between the target value and the current value.'},
+                      'Wolke':{'De': 'Der Indikator entwickelt sich zwar in die gewünschte Richtung auf das Ziel zu, bei Fortsetzung der Entwicklung würde das Ziel im Zieljahr aber um mehr als 20 % der Differenz zwischen Zielwert und aktuellem Wert verfehlt.',
+                               'En': 'Although the indicator is moving in the desired direction toward the target, if the trend were to continue, the target would be missed in the target year by more than 20% of the difference between the target value and the current value.'},
+                      'Blitz':{'De': 'Der Abstand zum Ziel ist konstant hoch oder vergrößert sich. Der Indikator entwickelt sich also nicht in die gewünschte Richtung.',
+                               'En': 'The distance to the target is constantly high or increases. Thus, the indicator does not develop in the desired direction.'}},
+                    'J':
+                          {'Sonne':{'De': 'Der Zielwert oder ein besserer Wert wurde im letzten Jahr erreicht und die durchschnittliche Veränderung deutet nicht in Richtung einer Verschlechterung.',
+                                   'En': 'The target value or a better value was achieved in the last year and the average change does not point in the direction of deterioration.'},
+                          'Leicht bewölkt':{'De': 'Der Zielwert oder ein besserer Wert wurde im letzten Jahr erreicht, aber die durchschnittliche Veränderung deutet in Richtung einer Verschlechterung.',
+                                   'En': 'The target value or a better value was achieved last year, but the average change points in the direction of deterioration.'},
+                          'Wolke':{'De': 'Der Zielwert wurde nicht erreicht, aber die durchschnittliche Entwicklung weist in die gewünschte Richtung.',
+                                   'En': 'The target value was not reached, but the average development points in the desired direction.'},
+                          'Blitz':{'De': 'Der Zielwert wurde verfehlt und der Indikator hat sich im Durchschnitt der letzten Veränderungen nicht in Richtung des Ziels bewegt.',
+                                   'En': 'The target value was missed and the indicator has not moved towards the target on average over the last changes.'}},
+                    'R':
+                          {'Sonne':{'De': 'Sowohl der Durchschnittswert als auch die letzte jährliche Veränderung deuten in die richtige Richtung.',
+                                   'En': 'Both the average value and the last annual change point in the right direction.'},
+                          'Leicht bewölkt':{'De': 'Die durchschnittliche Entwicklung zielt in die richtige Richtung, im letzten Jahr ergab sich jedoch eine Entwicklung in die falsche Richtung oder gar keine Veränderung.',
+                                   'En': 'The average development aims in the right direction, but in the last year there was a development in the wrong direction or no change at all.'},
+                          'Wolke':{'De': 'Der Durchschnittswert zielt in die falsche Richtung oder zeigt eine Stagnation an, im letzten Jahr zeigte sich jedoch eine Wende in die gewünschte Richtung.',
+                                   'En': 'The average value aims in the wrong direction or indicates stagnation, but last year showed a turn in the desired direction.'},
+                          'Blitz':{'De': 'Weder Durchschnittswert noch die letzte Veränderung deuten in die richtige Richtung.',
+                                   'En': 'Neither the average value nor the last change point in the right direction.'}},}
 
 # ----- Functions -----------
 # ---- Functions to get stuff ---------
@@ -236,20 +266,30 @@ def getHeader(index, lang):
     for iNr in indicators[indicators.IbNr == meta.loc[index, 'Tab_4a_Indikatorenblätter.IbNr']].index:
         re += '\n<div>'
         re += '\n  <div class="my-header">'
-        re += '\n    <h3>' + txtFct(indicators.loc[iNr, 'Indikator kurz ' + lang], lang)
+        re += '\n    <h5>' + txtFct(indicators.loc[iNr, 'Indikator kurz ' + lang], lang) 
+        if not pd.isnull(indicators.loc[iNr, 'Indikator kurz ' + lang]):
+            re += ': ' 
+        re += txtFct(indicators.loc[iNr, 'Ziel kurz ' + lang], lang)
         if not pd.isnull(weather.loc[iNr, 'Ws t-0']):
             wth = weather.loc[iNr, 'Ws t-0']
         elif not pd.isnull(weather.loc[iNr, 'Etappenziel 1 Ws t-0']):
             wth = weather.loc[iNr, 'Etappenziel 1 Ws t-0']
         if wth != '':
-            re += '\n      <a href="' + pageLinkDic[toggle][lang] + '"><img src="https://g205sdgs.github.io/sdg-indicators/public/Wettersymbole/' + wth + '.png" title="' + weatherTitleDic[wth][lang] + '" alt="Wettersymbol"/>'
+            re += '\n      <a href="' + pageLinkDic[toggle][lang] + '"><img src="https://g205sdgs.github.io/sdg-indicators/public/Wettersymbole/' + wth + '.png" title="' + weatherTitleDic[weather.loc[iNr, 'Zieltyp']][wth][lang] + '" alt="' + getAltWeather(wth, lang) + '"/>'
             re += '\n      </a>'
-        re += '\n    </h3>'
+        re += '\n    </h5>'
         re += '\n  </div>'
         re += '\n  <div class="my-header-note">'
         re += '\n  </div>'
         re += '\n</div>'
     return re
+
+def getAltWeather(wth, lang):
+    if lang == 'De':
+        return 'Wettersymbol: ' + wth
+    else: 
+        return 'Weathersymbol: ' + wth.replace('Sonne', 'Sun').replace('Leicht bewölkt', 'Clouded sun').replace('Wolke', 'cloud').replace('Blitz', 'Thuder strom')
+
 
 def getImgSourcePath(lang):
     if lang == 'De':
@@ -353,11 +393,12 @@ def getSpecifiedStuff(index, key, upperRange, nameOne, nameTwo, lang):
                 allSeries = allKSeries
             re += keyDict[key]
             for i in allSeries:
-                if i[0] == 'Z':
+                if i[0] == 'Z' and not pd.isnull(indicators.loc[i, 'Bezeichnung für Plattform En']):
                     re += '\n  - series: ' + indicators.loc[i, 'Bezeichnung für Plattform En'].lower()
+                    re += '\n    title: ' + txtFct(meta.loc[index, key + ' 1' + lang], lang[1:3]) 
                 elif i[0:2] == 'A_':
                     re += '\n  - series: ' + expressions.loc[i, 'Ausprägung En'].lower()
-                re += '\n    title: ' + txtFct(meta.loc[index, key + ' 1' + lang], lang[1:3])              
+                    re += '\n    title: ' + txtFct(meta.loc[index, key + ' 1' + lang], lang[1:3])              
             
         else:
             re += keyDict[key].replace('titles','title') + txtFct(meta.loc[index, key + ' 1' + lang], lang[1:3])
@@ -596,7 +637,7 @@ for page in meta.index:                                                         
     \nprevious: " + getFilename(getPreviousIndex(page, 'prev')) + "\
     \nnext: " + getFilename(getPreviousIndex(page, 'next')) + "\
     \n\n#content \
-    \ncontent_and_progress: " + addLinkFct(txtFct("<i>" + contentText['De'] + "</i>" + meta.loc[page, 'InhaltDe'], 'De'), 'De') + "\
+    \ncontent_and_progress: " + addLinkFct(txtFct("<i>" + contentText['De'] + "</i><br>" + meta.loc[page, 'InhaltDe'], 'De'), 'De') + "\
     \n\n#Sources\
     \n" + getSourcesFct(page, 'De') + "\
     \n\n#Status\
@@ -614,7 +655,7 @@ for page in meta.index:                                                         
     " + getStartValues(page) +"\
     \n\n" + getSpecifiedStuff(page, 'Achsenlimit', 4, 'minimum', 'maximum', '') + "\
     \n\n" + getSpecifiedStuff(page, 'Schrittweite y-Achse', 4, 'step', '', '') + "\
-    \n\n" + getSpecifiedStuff(page, 'Zeitreihenbruch', 2, 'value', '', '') + "\
+    \n\n" + getSpecifiedStuff(page, 'Zeitreihenbruch', 4, 'value', '', '') + "\
     " + getStackedDisagg(page) + "\
     \n\n" + getSomething('national_geographical_coverage', meta.loc[page,'Geografische Abdeckung De']) + "\
     \n---\n\n" + getHeader(page, 'De'))
@@ -628,12 +669,13 @@ for page in meta.index:                                                         
     \nsection: " + txtFct(meta.loc[page, 'Tab_2a_Bereiche.BezEn'], 'En') + "\
     \npostulate: " + txtFct(meta.loc[page, 'Tab_3a_Postulate.BezEn'], 'En') + "\
     \n\n#content \
-    \ncontent_and_progress: " + txtFct("<i>" + contentText['En'] + "</i>" + meta.loc[page, 'InhaltEn'], 'En') + "\
+    \ncontent_and_progress: " + txtFct("<i>" + contentText['En'] + "</i><br>" + meta.loc[page, 'InhaltEn'], 'En') + "\
     \n\n#Sources\
     \n" + getSourcesFct(page, 'En') + "\
     \ncopyright: '&copy; Federal Statistical Office (Destatis), " + year + "'\
     \n\n" + getFootnotes(page, 'En') + "\
     \n\n" + getSpecifiedStuff(page,'Grafiktitel', 5, 'title', '', ' En') + "\
+    \n\n" + getSpecifiedStuff(page,'Untertitel', 5, 'title', '', ' En') + "\
     \n\n" + getAnnotations(page, 'En') + "\
     \n\n" + getSomething('national_geographical_coverage', meta.loc[page,'Geografische Abdeckung En']) + "\
     \n" + getWeatherFct(page, 'En') +"\
