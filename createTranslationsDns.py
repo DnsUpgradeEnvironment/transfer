@@ -120,7 +120,7 @@ for x in dic:
     file.write('\n#' + dic[x]['title De'] + '\n')
     fileEn.write('\n#' + dic[x]['title En'] + '\n')
     for dataset in dic[x]['df'].index:
-        if not pd.isnull(dic[x]['df'].loc[dataset, dic[x]['key'] + ' En']):
+        if not (pd.isnull(dic[x]['df'].loc[dataset, dic[x]['key'] + ' En']) or dic[x]['df'].loc[dataset, dic[x]['key'] + ' En'] == ' '):
             file.write(txtFct(dic[x]['df'].loc[dataset, dic[x]['key'] + ' En'].lower(), 'De') + ': ' + txtFct(dic[x]['df'].loc[dataset, dic[x]['key'] + ' De'], 'De')+ '\n')
             fileEn.write(txtFct(dic[x]['df'].loc[dataset, dic[x]['key'] + ' En'].lower(), 'En') + ': ' + txtFct(dic[x]['df'].loc[dataset, dic[x]['key'] + ' En'],'En') + '\n')
     
