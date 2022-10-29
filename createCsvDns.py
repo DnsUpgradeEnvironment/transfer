@@ -43,6 +43,10 @@ geoCodes = {'A_LAENDER_BW':'code08',
             'A_LAENDER_SH':'code01',
             'A_LAENDER_TH':'code16'}
 
+halfYearDic = {}
+for year in np.arange(1990, 2025, 0.5):
+    halfYearDic[str(year).replace('.0','')] = str(year).replace('.0','/1').replace('.5','/2')
+
 # change the index of meta ("07.2.a,b") to become the filename of format "7-2-ab"
 def getFilename(index):
     filename = index.lstrip('0').replace('.','-').replace(',','')                    
@@ -89,15 +93,21 @@ for page in meta.index:
     
     #lets find out which years contain data for this indicator
     yearsWithValues = []
-    for year in np.arange(1990, 2025, 0.5):
-        # if year%1 == 0:
-        #     year = int(year)
-        # else:
-        #     year = str(year)
+    halfYears = False
+    for year in np.arange(1990, 2025, 0.5):  
         year = str(year)
         year = year.replace('.',',').replace(',0','')
-        if year in pageData.dropna(axis=1,how='all').columns and not meta.loc[page,str(year)]:
+        if (year in pageData.dropna(axis=1,how='all').columns and not meta.loc[page,str(year)]):
             yearsWithValues.append(year)
+            if ',5' in year:
+                halfYears = True
+    
+    # Fill in years without data if mor than 3 years are available
+    if halfYears == False and len(yearsWithValues) > 3:
+        for year in range(int(yearsWithValues[0]), int(yearsWithValues[-1])):
+            if not year in yearsWithValues:
+                yearsWithValues.append(year)
+        
     
     #create a new dataframe with target shape
     #first create a list containing one dictionary for each year with value, containing the relevant columns
@@ -107,15 +117,15 @@ for page in meta.index:
     for DNr in pageData.index:  #Dnr is the ID of a dataset that can contain values for year x ... y. 
                                 #Every dataset is a unique combination of 'time series', disaggregation expression 1', 'disaggregation expression 2' and 'unit'
         for year in yearsWithValues:  #loop through the years for every possible combination
-            # if year%1 == 0:
-            #     year = int(year)
-            # else:
-            #     year = str(year)
+            
             line = {}
             #if not pd.isnull(pageData.loc[DNr, str(year).replace('.',',')]):   #fill the dictionaries           
             for column in columns:
                 if column == 'Year':
-                    line['Year'] = str(year).replace(',','.')
+                    if halfYears:
+                        line ['Year'] = halfYearDic[str(year).replace(',','.')]
+                    else:
+                        line['Year'] = str(year)
                 elif column == 'Units' and not pd.isnull(units.loc[pageData.loc[DNr, 'Einheit'],'Einheit En']):
                     line[column] = txtFct(units.loc[pageData.loc[DNr, 'Einheit'],'Einheit En'].lower())
                 elif (column == 'time series' or column == 'Series'):
