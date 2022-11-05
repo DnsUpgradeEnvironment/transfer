@@ -126,26 +126,27 @@ replaceDic = {'De':
                    'SF6': u'SF\u2086',
                    'NF3': u'NF\u2083'}}
 
-sdgColors =    [['e5243b', '891523', 'ef7b89', '2d070b', 'f4a7b0', 'b71c2f', 'ea4f62', '5b0e17', 'fce9eb'],
-                ['dda63a', '896d1f', 'efd385', '2d240a', 'f4e2ae', 'b7922a', 'eac55d', '5b4915', 'f9f0d6'],
-                ['4c9f38', '2d5f21', '93c587', '0f1f0b', 'c9e2c3', '3c7f2c', '6fb25f', '1e3f16', 'a7d899'],
-                ['c5192d', '760f1b', 'dc7581', '270509', 'f3d1d5', '9d1424', 'd04656', '4e0a12', 'e7a3ab'],
-                ['ff3a21', 'b22817', 'ff7563', '330b06', 'ffd7d2', 'cc2e1a', 'ff614d', '7f1d10', 'ff9c90'],
-                ['26bde2', '167187', '7cd7ed', '07252d', 'd3f1f9', '1e97b4', '51cae7', '0f4b5a', 'a8e4f3'],
-                ['fcc30b', '977506', 'fddb6c', '322702', 'fef3ce', 'c99c08', 'fccf3b', '644e04', 'fde79d'],
-                ['a21942', '610f27', 'c7758d', '610F28', 'ecd1d9', '811434', 'b44667', '400a1a', 'd9a3b3'],
-                ['fd6925', '973f16', 'fda57c', '321507', 'fee1d3', 'ca541d', 'fd8750', '652a0e', 'fec3a7'],
-                ['dd1367', '840b3d', 'ea71a3', '2c0314', 'f8cfe0', 'b00f52', 'd5358b', '580729', 'f1a0c2'],
-                ['fd9d24', '653e0e', 'fed7a7', 'b16d19', 'fdba65', 'b14a1e', 'fd976b', '000000', 'fed2bf'],
-                ['bf8b2e', '785b1b', 'dec181', '281e09', 'f4ead5', 'a07a24', 'd3ad56', '503d12', 'e9d6ab'],
-                ['3f7e44', '254b28', '8bb18e', '0c190d', 'd8e5d9', '326436', '659769', '19321b', 'b2cbb4'],
-                ['0a97d9', '065a82', '6cc0e8', '021e2b', 'ceeaf7', '0878ad', '3aabe0', '043c56', '9dd5ef'],
-                ['56c02b', '337319', '99d97f', '112608', 'ddf2d4', '449922', '77cc55', '224c11', 'bbe5aa'],
-                ['00689d', '00293e', '99c2d7', '00486d', '4c95ba', '126b80', 'cce0eb', '5a9fb0', 'a1c8d2'],
-                ['19486a', '0a1c2a', '8ca3b4', '16377c', 'd1dae1', '11324a', '466c87', '5b73a3', '0f2656']]    
+sdgColors = ['#e5243b', '#dda63a', '#4c9f38', '#c5192d', '#ff3a21', '#26bde2', '#fcc30b', '#a21942', '#fd6925', '#dd1367', '#fd9d24', '#bf8b2e', '#3f7e44', '#0a97d9', '#56c02b', '#00689d', '#19486a']
+    
 #for finding numbers with whitespace as decimal seperator:
 decmark_reg = re.compile('(?<=\d) ')
 
+for abb in abbreviations.index:
+    for lang in ['De', 'En']:
+        if not pd.isnull(abbreviations.loc[abb, 'Klartext' + lang]):
+            for context in [[' ',' '],
+                            ['(',')'],
+                            [' ','-'],
+                            ['-',')'],
+                            ['-',' '],
+                            [' ','.'],
+                            [' ','+'],
+                            [' ',','],
+                            ['(',' '],
+                            [' ',')'],
+                            ['(','-'],
+                            [' ',"'"]]:              
+                replaceDic[lang][context[0] + abb + context[1]] = context[0] + '<abbr title="' + abbreviations.loc[abb, 'Klartext' + lang] + '">' + abb + "</abbr>" + context[1]
 
 titleDic = {'linkToSrcOrga':{
                 'De':{
@@ -585,11 +586,8 @@ def getWeatherFct2(index, lang):
     IbNr = meta.loc[index, 'Tab_4a_Indikatorenblätter.IbNr']
     df = weatherWithIndicatorInfos[(weatherWithIndicatorInfos.IbNr == IbNr)]
     counter = 0
-    re, re2, re3 = '', '', ''
-    
-    if len(df['INr'].unique())>1 and not meta.loc[index, 'Umschalten zwischen Zeitreihen?']:
-        print(index, "!!!")
-    
+    re = ''
+    re2 = ''
     if len(df) > 0:
         for INr in df['INr'].unique():
             years = [str(x) for x in range(2010, 2026)]
@@ -662,14 +660,9 @@ def getWeatherFct2(index, lang):
                         for y in data[data.INr == INr].dropna(axis='columns', how='all').columns:
                             try: 
                                 if float(y):
-                                    if not meta.loc[index, y]:
-                                        yearsOnYAxis.append(y)
+                                    yearsOnYAxis.append(y)
                             except ValueError:
                                 continue
-                        #add empty years
-                        [yearsOnYAxis.append(str(y)) for y in range(int(yearsOnYAxis[0]),int(yearsOnYAxis[-1])) if not str(y) in yearsOnYAxis]
-                        
-                        #add target years
                         if 'Zieljahr' in dfI.columns and not pd.isnull(dfI.loc[target, 'Zieljahr']):
                             [yearsOnYAxis.append(str(int(y))) for y in dfI.Zieljahr if not pd.isnull(y) and str(int(y)) not in yearsOnYAxis]
                             re2 += 'xValue: ' + str(yearsOnYAxis.index(str(int(dfI.loc[target, 'Zieljahr']))))
@@ -677,18 +670,11 @@ def getWeatherFct2(index, lang):
                                 re2 += '\n    xAdjust: -6'
                         elif dfI.loc[target,'Zieltyp'] == 'J':
                             re2 += 'xValue: 0'
-                        re2 += '\n    yValue: ' + str(dfI.loc[target, 'Zielwert'])                        
+                        re2 += '\n    yValue: ' + str(dfI.loc[target, 'Zielwert'])
                         re2 += '\n    pointStyle: triangle'
                         if dfI.loc[target, 'Zielrichtung'] == 'sinken':
                             re2 += '\n    rotation: 180'
-                            
-                        #check if there are targets of two indicators in same chart
-                        if len(df['INr'].unique())>1 and not meta.loc[index, 'Umschalten zwischen Zeitreihen?']:
-                            color = sdgColors[meta.loc[index, 'Ziel']-1][int(INr[-1])]
-                        else:
-                            color = sdgColors[meta.loc[index, 'Ziel']-1][0]
-                            
-                        re2 += '\n    backgroundColor: "#' + color + '"'
+                        re2 += '\n    backgroundColor: "' + sdgColors[meta.loc[index, 'Ziel']-1] + '"'
                         re2 += '\n    preset: target_points'
                         
                         #repeat for J targets
@@ -699,38 +685,9 @@ def getWeatherFct2(index, lang):
                                 if jj == len(yearsOnYAxis):
                                    re2 += '\n    xAdjust: -6' 
                         
-                        # graph_annotations from here
-                        re3 += '\n  - '
-                        if meta.loc[index, 'Umschalten zwischen Zeitreihen?']:
-                            if 'K_SERIES' in list(data[data.INr == INr].xs('Disaggregation 1 Kategorie', axis=1)):
-                                re3 += 'series: ' + expressions.loc[dfI.loc[target, 'Spezifikation'], 'Ausprägung En'].lower() + '\n    '
-                            else:
-                                re3 += 'series: ' + indicators.loc[INr, 'Bezeichnung für Plattform En'].lower() + '\n    '
-                        re3 += 'value: ' + str(dfI.loc[target, 'Zielwert']).replace(',','.')
-                        re3 += '\n    label:'
-                        #check if there are targets of two indicators in same chart
-                        if len(df['INr'].unique())>1 and not meta.loc[index, 'Umschalten zwischen Zeitreihen?']:
-                            additionalLabel = ' - ' + indicators.loc[INr, 'Indikator kurz ' + lang]
-                        else:
-                            additionalLabel = ''
-                            
-                        if 'Zieljahr' in dfI.columns and not pd.isnull(dfI.loc[target, 'Zieljahr']):
-                            re3 += '\n      content: ' + transl[lang] + ' ' + str(int(dfI.loc[target, 'Zieljahr'])) + additionalLabel
-                        else:
-                            re3 += '\n      content: ' + transl[lang + 'EveryYear']
-                        re3 += '\n      position: left'
-                        re3 += '\n      backgroundColor: transparent'
-                        re3 += '\n      color: transparent'
-                        re3 += '\n    preset: target_line'
-                        re3 += '\n    borderColor: transparent'
-                        
-                        
     re = re.replace(': B\n', ': Blitz\n').replace(': W\n', ': Wolke\n').replace(': L\n', ': Leicht bewölkt\n').replace(': S\n', ': Sonne\n')
-    if len(re2) > 0:
-        re2 = '\ngraph_target_points:' + re2
-    if len(re3) > 0:
-        re3 = '\ngraph_annotations:' + re3
-    return re, re2, re3
+    re2 = '\ngraph_target_points:' + re2
+    return re, re2
 
 def getValidFct (year, prevTgtYear, validTill):
     if pd.isnull(year) or not pd.isnull(validTill):
@@ -853,7 +810,6 @@ def getWeatherFct(index, lang):
 
 
 # -- Text functions ---------
- 
 def nanFct(inpt):
     if pd.isnull(inpt):
         return ''
@@ -869,16 +825,16 @@ def quotationFct(inpt):
     else:
         return inpt
 
-def replaceFct(dic, inpt, lang):
-    for i in dic[lang]:
-        inpt = inpt.replace(i,'XXX' + dic[lang][i] + 'XXX')
+def replaceFct(inpt, lang):
+    for i in replaceDic[lang]:
+        inpt = inpt.replace(i,'XXX' + replaceDic[lang][i] + 'XXX')
     inpt = decmark_reg.sub('&nbsp;',inpt) # replace all whitespaces between numeric values
     return inpt.replace('XXX', '')
         
 def txtFct (inpt, lang):
-    return quotationFct(replaceFct(abbDic, replaceFct(replaceDic, wrappingFct(nanFct(inpt)), lang), lang))
+    return quotationFct(replaceFct(wrappingFct(nanFct(inpt)), lang))
 
-def undoAbbrFct (text, lang):
+def undoAbbrFct (text, lang): 
     for abb in abbreviations.index:
         if not pd.isnull(abbreviations.loc[abb, 'Klartext' + lang]):
             text = text.replace('<abbr title="' + abbreviations.loc[abb, 'Klartext' + lang] + '">' + abb + '</abbr>', abb)
@@ -894,27 +850,6 @@ def getSdgIndicators(index):
     if not pd.isnull(meta.loc[index, 'SDG2']):            
         re += "\nsdg_indicator2: " + meta.loc[index, 'SDG2']
     return re
-
-# Adding abbreviations to replaceDic
-abbDic = {'De':{}, 'En':{}}
-for abb in abbreviations.index:
-    for lang in ['De', 'En']:
-        if not pd.isnull(abbreviations.loc[abb, 'Klartext' + lang]):
-            for context in [[' ',' '],
-                            ['nbsp;',' '],
-                            ['(',')'],
-                            [' ','-'],
-                            ['-',')'],
-                            ['-',' '],
-                            [' ','.'],
-                            [' ','+'],
-                            [' ',','],
-                            ['(',' '],
-                            [' ',')'],
-                            ['(','-'],
-                            [' ',"'"]]:              
-                abbDic[lang][context[0] + abb + context[1]] = context[0] + '<abbr title="' + abbreviations.loc[abb, 'Klartext' + lang] + '">' + abb + "</abbr>" + context[1]
-
 # --------------------------------------
 for page in meta.index:                                                             # page = 07.1.a,b
     
@@ -958,7 +893,7 @@ for page in meta.index:                                                         
     \n\n" + getFootnotes(page, 'De') + "\
     \n\n" + undoAbbrFct(getSpecifiedStuff(page,'Grafiktitel', 5, 'title', '', ' De'), 'De') + "\
     \n\n" + undoAbbrFct(getSpecifiedStuff(page,'Untertitel', 5, 'title', '', ' De'), 'De') + "\
-    \n\n" + getWeatherFct2(page, 'De')[2] + "\
+    \n\n" + getAnnotations(page, 'De') + "\
     \n\n" + getSpecifiedStuff(page, 'Dezimalstellen', 4, 'decimals', '', '') +"\
     \n\nspan_gaps: " + str(meta.loc[page, 'Lücken füllen?']).lower() + "\
     \nshow_line: " + str(meta.loc[page, 'Linie anzeigen?']).lower() + "\
@@ -971,8 +906,7 @@ for page in meta.index:                                                         
     " + getSomething('x_axis_label', meta.loc[page,'x-Achsenbezeichnung De']) + "\
     " + getSomething('national_geographical_coverage', meta.loc[page,'Geografische Abdeckung De']) + "\
     \n---\n\n" + getHeader(page, 'De'))
-    # \n\n" + getAnnotations(page, 'De') + "\
-    # \n\n" + getWeatherFct2(page, 'De')[2] + "\
+    
     fileEn.write("---\n\nlanguage: en\
     \nnational_indicator_available: " + txtFct(meta.loc[page, 'Tab_4a_Indikatorenblätter.BezEn'], 'En') + "\
     \n\ndns_indicator_definition: " + txtFct(meta.loc[page, 'DefinitionEn'], 'En') + "\
