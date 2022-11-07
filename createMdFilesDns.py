@@ -319,9 +319,9 @@ def getFootnotes(index, lang):
         if not pd.isnull(footnote):
             footnote = footnote.replace('\n','<br>')
             if '<br>' in footnote:
-                return 'data_footnotes: ' + txtFct(footnote.replace('<br>', '<br>• '), lang)
+                return 'data_footnotes: ' + txtFct('true', footnote.replace('<br>', '<br>• '), lang)
             else:
-                return 'data_footnote: ' + txtFct(footnote, lang)
+                return 'data_footnote: ' + txtFct('true', footnote, lang)
         else:
             return re       
     else:
@@ -345,11 +345,11 @@ def getFootnotes(index, lang):
                     elif spec[0] == 'Z':
                         re += '\n  - series: ' + indicators.loc[spec, 'Bezeichnung für Plattform En'].lower() + '\n    '
                     else:
-                        print("Error: Wrong key at footer field specificaion. ", index)
+                        print("Error: Wrong key at footer field specificaion.", index)
                 else:
                         re += '\n  - '
-                re += 'label: ' + txtFct(dicFootnoteLabels[case + lang], lang)
-                re += '\n    value: ' + txtFct(value.replace('<br>', '<br>• '), lang)            
+                re += 'label: ' + txtFct('true', dicFootnoteLabels[case + lang], lang)
+                re += '\n    value: ' + txtFct('true', value.replace('<br>', '<br>• '), lang)            
     return re
 
 def getHeader(index, lang):
@@ -359,8 +359,8 @@ def getHeader(index, lang):
         if not pd.isnull(indicators.loc[iNr, 'Ziel kurz ' + lang]):
             re += '\n<div>'
             re += '\n  <div class="my-header">'
-            re += '\n    <h5>' + txtFct(indicators.loc[iNr, 'Indikator kurz ' + lang], lang) + ': ' 
-            re += txtFct(indicators.loc[iNr, 'Ziel kurz ' + lang], lang)
+            re += '\n    <h5>' + txtFct('true', indicators.loc[iNr, 'Indikator kurz ' + lang], lang) + ': ' 
+            re += txtFct('true', indicators.loc[iNr, 'Ziel kurz ' + lang], lang)
             if not pd.isnull(weather.loc[iNr, 'Ws t-0']):
                 wth = weather.loc[iNr, 'Ws t-0']
             elif not pd.isnull(weather.loc[iNr, 'Etappenziel 1 Ws t-0']):
@@ -372,10 +372,11 @@ def getHeader(index, lang):
                 re += '\n      <a href="' + pageLinkDic[toggle][lang] + '"><img src="https://g205sdgs.github.io/sdg-indicators/public/Wettersymbole/' + wth + '.png" title="' + getWeatherTitel(lastWeatherYear, {'De':' (Datenstand 31.09.2022)','En':' (Data as of Sep. 31. 2022)'}, weather.loc[iNr, 'Zieltyp'], wth[0], lang) + '" alt="' + getAltWeather(wth, lang) + '"/>'
                 re += '\n      </a>'
             re += '\n    </h5>'
-            re += '\n  </div>'
-            re += '\n  <div class="my-header-note">'
-            re += '\n  </div>'
+            re += '\n  </div>'   
             re += '\n</div>'
+    re += '\n<div class="my-header-note">'
+    re += '\n  Die Bewertung des Indikators beruht auf den Daten des Berichtsjahres 2020 zum Stand 31.9.2022.'
+    re += '\n</div>'
     return re
 
 def getAltWeather(wth, lang):
@@ -460,7 +461,7 @@ def getSourcesFct(index, lang):
         for linkId in srcDic[orgaId]:
             d += 1
             re += '\nsource_url_' + str(c) + appendix[d] + ": '" + getLanguageDependingContent(links, linkId, 'Link ', lang) + "'"
-            re += '\nsource_url_text_' + str(c) + appendix[d] + ': ' + txtFct(links.loc[linkId, 'Text ' + lang], lang)
+            re += '\nsource_url_text_' + str(c) + appendix[d] + ': ' + txtFct('true', links.loc[linkId, 'Text ' + lang], lang)
         re += '\n'  
     return re
 
@@ -484,13 +485,13 @@ def getSpecifiedStuff(index, key, upperRange, nameOne, nameTwo, lang):
             for i in allSeries:
                 if i[0] == 'Z' and not pd.isnull(indicators.loc[i, 'Bezeichnung für Plattform En']):
                     re += '\n  - series: ' + indicators.loc[i, 'Bezeichnung für Plattform En'].lower()
-                    re += '\n    title: ' + txtFct(meta.loc[index, key + ' 1' + lang], lang[1:3]) 
+                    re += '\n    title: ' + txtFct('false', meta.loc[index, key + ' 1' + lang], lang[1:3]) 
                 elif i[0:2] == 'A_':
                     re += '\n  - series: ' + expressions.loc[i, 'Ausprägung En'].lower()
-                    re += '\n    title: ' + txtFct(meta.loc[index, key + ' 1' + lang], lang[1:3])              
+                    re += '\n    title: ' + txtFct('false', meta.loc[index, key + ' 1' + lang], lang[1:3])              
             
         else:
-            re += keyDict[key].replace('titles','title') + txtFct(meta.loc[index, key + ' 1' + lang], lang[1:3])
+            re += keyDict[key].replace('titles','title') + txtFct('false', meta.loc[index, key + ' 1' + lang], lang[1:3])
             
         
     elif key == 'Grafiktyp' and pd.isnull(meta.loc[index, 'Grafiktyp 1 Spezifikation']):
@@ -526,7 +527,7 @@ def getSpecifiedStuff(index, key, upperRange, nameOne, nameTwo, lang):
 def getSeriesBreakValue(index, breakYear, key, spec, lang):
     if not key == 'Zeitreihenbruch':
         if lang != '':
-            return txtFct(breakYear, lang[1:3])
+            return txtFct('true', breakYear, lang[1:3])
         else:
             return str(breakYear)
     else:
@@ -585,7 +586,7 @@ def getWeatherFct2(index, lang):
     IbNr = meta.loc[index, 'Tab_4a_Indikatorenblätter.IbNr']
     df = weatherWithIndicatorInfos[(weatherWithIndicatorInfos.IbNr == IbNr)]
     counter = 0
-    re, re2, re3 = '', '', ''
+    re, reTp, reTpComplete, reTL, re3, reHeader = '', '', '', '', '', ''
     
     if len(df['INr'].unique())>1 and not meta.loc[index, 'Umschalten zwischen Zeitreihen?']:
         print(index, "!!!")
@@ -594,143 +595,249 @@ def getWeatherFct2(index, lang):
         for INr in df['INr'].unique():
             years = [str(x) for x in range(2010, 2026)]
             dfI = df[df.INr == INr].dropna(axis='columns', how='all') #df with one indicator only and no columns with nan only
-            #readd some columns
-            for column in ['VorherigesZieljahr', 'Gültig bis', 'Gültig seit']:
-                if not column in dfI.columns:
-                    l = [np.nan for x in range(len(dfI))]
-                    dfI[column] = l
-                    
-            counter += 1
-            if lang == 'De':
-                re += '\n\nweather_active_' + str(counter) + ': true' 
-            re += '\nweather_indicator_' + str(counter) + ': ' + indicators.loc[INr, 'Indikator'] + ' ' + txtFct(indicators.loc[INr, 'Bezeichnung für Plattform ' + lang], lang)
-            
-            # Years
-            years = [str(x) for x in range(2010, 2026)]
-            yearCounter = 0
-            for year in list(reversed(years)):
-                if year in dfI.columns: 
-                    re += '\nweather_indicator_' + str(counter) + '_year_' + string.ascii_lowercase[yearCounter] +": '" + year + "'"
-                    yearCounter += 1
-            
-            # Actual target
-            re += '\n\nweather_indicator_' + str(counter) + '_target: ' + txtFct(indicators.loc[INr, 'Ziel ' + lang], lang)
-            
-            # Loop through all available targets
-            targetCounter = 0
-            for target in dfI.index:
-                targetCounter +=1
-                re += '\n\nweather_indicator_' + str(counter) + '_target_' + str(targetCounter) + ': '
-                if 'ZielÜbersichtDe' in dfI.columns:
-                    re += txtFct(dfI.loc[target, 'ZielÜbersicht' + lang], lang)
-                else:
-                    re += txtFct(indicators.loc[INr, 'Ziel ' + lang], lang)
+            if len(dfI) > 0:
+                #readd some columns
+                for column in ['VorherigesZieljahr', 'Gültig bis', 'Gültig seit', 'Spezifikation']:
+                    if not column in dfI.columns:
+                        l = [np.nan for x in range(len(dfI))]
+                        dfI[column] = l
+                        
+                counter += 1
+                if lang == 'De':
+                    re += '\n\nweather_active_' + str(counter) + ': true' 
+                re += '\nweather_indicator_' + str(counter) + ': ' + indicators.loc[INr, 'Indikator'] + ' ' + txtFct('true', indicators.loc[INr, 'Bezeichnung für Plattform ' + lang], lang)
                 
-                # type of target
-                targetType = 'normal'
-               
-                if not pd.isnull(dfI.loc[target, 'Gültig seit']):
-                    targetType = 'new'                
-                if not pd.isnull(dfI.loc[target, 'Gültig bis']):
-                    targetType = 'old'
-                    
-                re += '\nweather_indicator_' + str(counter) + '_target_' + str(targetCounter) + '_category: ' + targetType
-                if targetType == 'new':
-                    re += '\nweather_indicator_' + str(counter) + '_target_' + str(targetCounter) + '_validFrom: ' + str(int(dfI.loc[target, 'Gültig seit']))
-                if targetType == 'old':
-                    re += '\nweather_indicator_' + str(counter) + '_target_' + str(targetCounter) + '_validUntil: ' + str(int(dfI.loc[target, 'Gültig bis']))
-                
-                re += '\n'
-                
-                # items
+                # Years
+                years = [str(x) for x in range(2010, 2026)]
                 yearCounter = 0
                 for year in list(reversed(years)):
-                    if year in dfI.columns:               
-                        title = getWeatherTitel(year,{'De':'','En':''}, dfI.loc[target, 'Zieltyp'], dfI.loc[target, year], lang)
-                        re += '\nweather_indicator_' + str(counter) + '_target_' + str(targetCounter) + '_item_' + string.ascii_lowercase[yearCounter] + ': ' + nanFct(dfI.loc[target, year])
-                        re += '\nweather_indicator_' + str(counter) + '_target_' + str(targetCounter) + '_item_' + string.ascii_lowercase[yearCounter] + '_title: ' + title
-                        re += '\nweather_indicator_' + str(counter) + '_target_' + str(targetCounter) + '_item_' + string.ascii_lowercase[yearCounter] + '_valid: ' + getValidFct(year, dfI.loc[target, 'VorherigesZieljahr'], dfI.loc[target, 'Gültig bis'])
-                        yearCounter += 1     
+                    if year in dfI.columns: 
+                        re += '\nweather_indicator_' + str(counter) + '_year_' + string.ascii_lowercase[yearCounter] +": '" + year + "'"
+                        yearCounter += 1
                 
-                # graph_target_points from here
-                if dfI.loc[target, 'InGrafikAnzeigen?']:
-                    if pd.isnull(dfI.loc[target, 'Gültig bis']):
-                        re2 += '\n  - '
-                        if meta.loc[index, 'Umschalten zwischen Zeitreihen?']:
-                            re2 += 'series: ' + indicators.loc[INr, 'Bezeichnung für Plattform En'].lower() + '\n    '
-                        yearsOnYAxis = []
-                        for y in data[data.INr == INr].dropna(axis='columns', how='all').columns:
-                            try: 
-                                if float(y):
-                                    if not meta.loc[index, y]:
-                                        yearsOnYAxis.append(y)
-                            except ValueError:
-                                continue
-                        #add empty years
-                        [yearsOnYAxis.append(str(y)) for y in range(int(yearsOnYAxis[0]),int(yearsOnYAxis[-1])) if not str(y) in yearsOnYAxis]
+                # Actual target
+                re += '\n\nweather_indicator_' + str(counter) + '_target: ' + txtFct('true', indicators.loc[INr, 'Ziel ' + lang], lang)
+                
+                #-------------------------------------------------------------------------------------    
+                # header from here
+                if INr != 'Z06_B02_P01_Ib01_I03':
+                    targetYearH = ''
+                    reHeader += '\n<div>'
+                    reHeader += '\n  <div class="my-header">'
+                    reHeader += '\n    <h5>' + txtFct('true', indicators.loc[INr, 'Indikator kurz ' + lang], lang) + ': ' 
+                    reHeader += txtFct('true', indicators.loc[INr, 'Ziel kurz ' + lang], lang)
+                
+                # Loop through all available targets
+                targetCounter = 0
+                for target in dfI.index:
+                    #first lets find the series for which the target is for
+                    seriesKey = INr
+                    series = indicators.loc[seriesKey, 'Bezeichnung für Plattform En'].lower()
+                    if not pd.isnull(dfI.loc[target, 'Spezifikation']):
+                        seriesKey = dfI.loc[target, 'Spezifikation']
+                        series = expressions.loc[seriesKey, 'Ausprägung En'].lower()
                         
-                        #add target years
-                        if 'Zieljahr' in dfI.columns and not pd.isnull(dfI.loc[target, 'Zieljahr']):
-                            [yearsOnYAxis.append(str(int(y))) for y in dfI.Zieljahr if not pd.isnull(y) and str(int(y)) not in yearsOnYAxis]
-                            re2 += 'xValue: ' + str(yearsOnYAxis.index(str(int(dfI.loc[target, 'Zieljahr']))))
-                            if yearsOnYAxis.index(str(int(dfI.loc[target, 'Zieljahr']))) == len(yearsOnYAxis)-1:
-                                re2 += '\n    xAdjust: -6'
-                        elif dfI.loc[target,'Zieltyp'] == 'J':
-                            re2 += 'xValue: 0'
-                        re2 += '\n    yValue: ' + str(dfI.loc[target, 'Zielwert'])                        
-                        re2 += '\n    pointStyle: triangle'
-                        if dfI.loc[target, 'Zielrichtung'] == 'sinken':
-                            re2 += '\n    rotation: 180'
-                            
-                        #check if there are targets of two indicators in same chart
-                        if len(df['INr'].unique())>1 and not meta.loc[index, 'Umschalten zwischen Zeitreihen?']:
-                            color = sdgColors[meta.loc[index, 'Ziel']-1][int(INr[-1])]
-                        else:
-                            color = sdgColors[meta.loc[index, 'Ziel']-1][0]
-                            
-                        re2 += '\n    backgroundColor: "#' + color + '"'
-                        re2 += '\n    preset: target_points'
+                    
+                    targetCounter +=1
+                    re += '\n\nweather_indicator_' + str(counter) + '_target_' + str(targetCounter) + ': '
+                    if 'ZielÜbersichtDe' in dfI.columns:
+                        re += txtFct('true', dfI.loc[target, 'ZielÜbersicht' + lang], lang)
+                    else:
+                        re += txtFct('true', indicators.loc[INr, 'Ziel ' + lang], lang)
+                    
+                    # type of target
+                    targetType = 'normal'
+                   
+                    if not pd.isnull(dfI.loc[target, 'Gültig seit']):
+                        targetType = 'new'                
+                    if not pd.isnull(dfI.loc[target, 'Gültig bis']):
+                        targetType = 'old'
                         
-                        #repeat for J targets
-                        if dfI.loc[target,'Zieltyp'] == 'J':
-                            save = re2
-                            for jj in range(len(yearsOnYAxis)):
-                                re2 += save.replace('xValue: 0', 'xValue: ' + str(jj))
-                                if jj == len(yearsOnYAxis):
-                                   re2 += '\n    xAdjust: -6' 
-                        
-                        # graph_annotations from here
-                        re3 += '\n  - '
-                        if meta.loc[index, 'Umschalten zwischen Zeitreihen?']:
-                            if 'K_SERIES' in list(data[data.INr == INr].xs('Disaggregation 1 Kategorie', axis=1)):
-                                re3 += 'series: ' + expressions.loc[dfI.loc[target, 'Spezifikation'], 'Ausprägung En'].lower() + '\n    '
+                    re += '\nweather_indicator_' + str(counter) + '_target_' + str(targetCounter) + '_category: ' + targetType
+                    if targetType == 'new':
+                        re += '\nweather_indicator_' + str(counter) + '_target_' + str(targetCounter) + '_validFrom: ' + str(int(dfI.loc[target, 'Gültig seit']))
+                    if targetType == 'old':
+                        re += '\nweather_indicator_' + str(counter) + '_target_' + str(targetCounter) + '_validUntil: ' + str(int(dfI.loc[target, 'Gültig bis']))
+                    
+                    re += '\n'
+                    
+                    # items
+                    yearCounter = 0
+                    for year in list(reversed(years)):
+                        if year in dfI.columns:               
+                            title = getWeatherTitel(year,{'De':'','En':''}, dfI.loc[target, 'Zieltyp'], dfI.loc[target, year], lang)
+                            re += '\nweather_indicator_' + str(counter) + '_target_' + str(targetCounter) + '_item_' + string.ascii_lowercase[yearCounter] + ': ' + nanFct(dfI.loc[target, year])
+                            re += '\nweather_indicator_' + str(counter) + '_target_' + str(targetCounter) + '_item_' + string.ascii_lowercase[yearCounter] + '_title: ' + title
+                            re += '\nweather_indicator_' + str(counter) + '_target_' + str(targetCounter) + '_item_' + string.ascii_lowercase[yearCounter] + '_valid: ' + getValidFct(year, dfI.loc[target, 'VorherigesZieljahr'], dfI.loc[target, 'Gültig bis'])
+                            yearCounter += 1     
+                    
+                    # graph_target_points from here
+                    if dfI.loc[target, 'InGrafikAnzeigen?']:
+                        if pd.isnull(dfI.loc[target, 'Gültig bis']) and target != 'W_0602x_2030':
+                            # find graph type
+                            if pd.isnull(meta.loc[index, 'Grafiktyp 1 Spezifikation']):
+                                graphType = meta.loc[index, 'Grafiktyp 1']
                             else:
-                                re3 += 'series: ' + indicators.loc[INr, 'Bezeichnung für Plattform En'].lower() + '\n    '
-                        re3 += 'value: ' + str(dfI.loc[target, 'Zielwert']).replace(',','.')
-                        re3 += '\n    label:'
-                        #check if there are targets of two indicators in same chart
-                        if len(df['INr'].unique())>1 and not meta.loc[index, 'Umschalten zwischen Zeitreihen?']:
-                            additionalLabel = ' - ' + indicators.loc[INr, 'Indikator kurz ' + lang]
-                        else:
-                            additionalLabel = ''
+                                for i in ['1', '2']:
+                                    if meta.loc[index, 'Grafiktyp ' + i + ' Spezifikation'] == dfI.loc[target, 'Spezifikation']:
+                                        graphType = meta.loc[index, 'Grafiktyp ' + i]
+                            # start writing
+                            reTp += '\n  - '
+                            reTL += '\n  - '
+                            # series depending?
+                            if meta.loc[index, 'Umschalten zwischen Zeitreihen?']:
+                                if 'K_SERIES' in list(data[data.INr == INr].xs('Disaggregation 1 Kategorie', axis=1)):
+                                    reTp += 'series: ' + expressions.loc[dfI.loc[target, 'Spezifikation'], 'Ausprägung En'].lower() + '\n    '
+                                    reTL += 'series: ' + expressions.loc[dfI.loc[target, 'Spezifikation'], 'Ausprägung En'].lower() + '\n    '
+                                else:
+                                    reTp += 'series: ' + indicators.loc[INr, 'Bezeichnung für Plattform En'].lower() + '\n    '
+                                    reTL += 'series: ' + indicators.loc[INr, 'Bezeichnung für Plattform En'].lower() + '\n    '
                             
-                        if 'Zieljahr' in dfI.columns and not pd.isnull(dfI.loc[target, 'Zieljahr']):
-                            re3 += '\n      content: ' + transl[lang] + ' ' + str(int(dfI.loc[target, 'Zieljahr'])) + additionalLabel
-                        else:
-                            re3 += '\n      content: ' + transl[lang + 'EveryYear']
-                        re3 += '\n      position: left'
-                        re3 += '\n      backgroundColor: transparent'
-                        re3 += '\n      color: transparent'
-                        re3 += '\n    preset: target_line'
-                        re3 += '\n    borderColor: transparent'
-                        
-                        
-    re = re.replace(': B\n', ': Blitz\n').replace(': W\n', ': Wolke\n').replace(': L\n', ': Leicht bewölkt\n').replace(': S\n', ': Sonne\n')
-    if len(re2) > 0:
-        re2 = '\ngraph_target_points:' + re2
+                            #determine years
+                            yearsOnYAxis = []
+                            for y in data[data.IbNr == IbNr].dropna(axis='columns', how='all').columns:
+                                try: 
+                                    if float(y):
+                                        if not meta.loc[index, y]:
+                                            yearsOnYAxis.append(y)
+                                except ValueError:
+                                    continue 
+                            #add empty years
+                            if len(yearsOnYAxis) > 3:
+                                [yearsOnYAxis.append(str(y)) for y in range(int(yearsOnYAxis[0]),int(yearsOnYAxis[-1])) if not str(y) in yearsOnYAxis]
+                            #add target years
+                            if 'Zieljahr' in dfI.columns and not pd.isnull(dfI.loc[target, 'Zieljahr']):
+                                [yearsOnYAxis.append(str(int(y))) for y in dfI.Zieljahr if not pd.isnull(y) and str(int(y)) not in yearsOnYAxis]
+                                targetYear = yearsOnYAxis.index(str(int(dfI.loc[target, 'Zieljahr'])))
+                                
+                                if graphType == 'bar' and dfI.loc[target,'Zieltyp'] != 'J':
+                                    reTp += 'type: box'
+                                    reTp += '\n    xMin: ' + str(targetYear-0.3)
+                                    reTp += '\n    xMax: ' + str(targetYear+0.3)
+                                    reTL += 'type: label'
+                                    if targetYear == len(yearsOnYAxis)-1:
+                                        reTL += '\n    xValue: ' + str(targetYear) 
+                                else:
+                                    reTp += 'xValue: ' + str(targetYear)
+                                    reTL += 'type: label'
+                                    if targetYear == len(yearsOnYAxis)-1:
+                                        reTp += '\n    xAdjust: -6'
+                                        reTL += '\n    xValue: ' + str(targetYear - 0.5).replace(',','.')
+                                    else: reTL += '\n    xValue: ' + str(targetYear).replace(',','.')
+                            elif dfI.loc[target,'Zieltyp'] == 'J':
+                                reTp += 'xValue: x'                            
+                            
+                            if graphType == 'bar' and dfI.loc[target,'Zieltyp'] != 'J':
+                                reTp += '\n    yMin: 0'
+                                reTp += '\n    yMax: ' + str(dfI.loc[target, 'Zielwert']).replace(',','.') 
+                            else:
+                                reTp += '\n    yValue: ' + str(dfI.loc[target, 'Zielwert']).replace(',','.')                        
+                                reTp += '\n    pointStyle: triangle'
+                                if dfI.loc[target, 'Zielrichtung'] == 'sinken':
+                                    reTp += '\n    rotation: 180'
+                            
+                            
+                            if "LabelPositionY" in dfI.columns:
+                                if not pd.isnull(dfI.loc[target, 'LabelPositionY']):
+                                    reTL += '\n    yValue: ' + str(dfI.loc[target, 'LabelPositionY']).replace(',','.')
+                            
+                            #check if there are targets of two indicators in same chart
+                            if (len(df['INr'].unique()) > 1 or ('K_SERIES' in list(data[data.INr == INr].xs('Disaggregation 1 Kategorie', axis=1)) and not np.nan in list(data[data.INr == INr].xs('Disaggregation 1 Kategorie', axis=1)))) and not meta.loc[index, 'Umschalten zwischen Zeitreihen?']:
+                                color = sdgColors[meta.loc[index, 'Ziel']-1][int(INr[-1])] #- int(INr[-1]) - 6]
+                            else:
+                                color = sdgColors[meta.loc[index, 'Ziel']-1][0]
+                             
+                            if graphType == 'bar' and dfI.loc[target,'Zieltyp'] != 'J':    
+                                reTp += '\n    borderColor: "#' + color + '"'
+                                reTp += '\n    backgroundColor: transparent'
+                                reTp += '\n    borderDash: [1, 0]'
+                                reTp += '\n    borderWidth: 2'
+                            else:
+                                reTp += '\n    borderColor: "#' + color + '"'
+                            reTp += '\n    preset: target_points'
+                            reTL += '\n    backgroundColor: transparent'
+                            reTL += "\n    content: ['Ziel:','" + str(dfI.loc[target, 'Zielwert']) + "']"
+                            reTL += "\n    font: {"
+                            reTL += "\n      size: 14"
+                            reTL += "\n      }"
+                            
+                            #repeat for J targets
+                            if dfI.loc[target,'Zieltyp'] == 'J':
+                                save = reTp
+                                reTp = ''
+                                for jj in range(len(yearsOnYAxis)):
+                                    ok = False
+                                    if 'AnzeigenAb' in dfI.columns:
+                                        if int(yearsOnYAxis[jj]) >= int(dfI.loc[target, 'AnzeigenAb']):
+                                            ok = True
+                                    
+                                    elif 'AnzeigenBis' in dfI.columns:
+                                        if int(yearsOnYAxis[jj]) <= int(dfI.loc[target, 'AnzeigenBis']):
+                                            ok = True 
+                                    else:
+                                        ok = True        
+                                    if ok:    
+                                        reTp += save.replace('xValue: x', 'xValue: ' + str(jj))                                  
+                                        if jj == len(yearsOnYAxis) - 1:
+                                           reTp += '\n    xAdjust: -6' 
+                                save = ''
+                            #-------------------------------------------------------------------------------------    
+                            # graph_annotations from here
+                            re3 += '\n  - '
+                            if meta.loc[index, 'Umschalten zwischen Zeitreihen?']:
+                                re3 += 'series: ' + series + '\n    '
+                            re3 += 'value: ' + str(dfI.loc[target, 'Zielwert']).replace(',','.')
+                            re3 += '\n    label:'
+                            #check if there are targets of two indicators in same chart
+                            if len(df['INr'].unique()) > 1 and not meta.loc[index, 'Umschalten zwischen Zeitreihen?']:
+                                additionalLabel = ' - ' + indicators.loc[INr, 'Indikator kurz ' + lang]
+                            else:
+                                additionalLabel = ''
+                                
+                            if 'Zieljahr' in dfI.columns and not pd.isnull(dfI.loc[target, 'Zieljahr']):
+                                re3 += '\n      content: ' + transl[lang] + ' ' + str(int(dfI.loc[target, 'Zieljahr'])) + additionalLabel
+                            else:
+                                re3 += '\n      content: ' + transl[lang + 'EveryYear']
+                            re3 += '\n      position: left'
+                            re3 += '\n      backgroundColor: transparent'
+                            re3 += '\n      color: transparent'
+                            re3 += '\n    preset: target_line'
+                            re3 += '\n    borderColor: transparent'
+                            
+                            # header from here
+                            weather, targetType, targetYearH = '', '', ''
+                            if dfI.loc[target, 'AktuellGültig?'] and INr != 'Z06_B02_P01_Ib01_I03':
+                                for year in yearsOnYAxis:
+                                    if year in dfI.columns and not pd.isnull(dfI.loc[target, year]):
+                                        weather = weatherLong[dfI.loc[target, year]]
+                                        targetType = dfI.loc[target, 'Zieltyp']
+                                        targetYearH = year
+                                if weather != '':
+                                    reHeader += '\n      <a href="' + pageLinkDic[toggle][lang] + '"><img src="https://g205sdgs.github.io/sdg-indicators/public/Wettersymbole/' + weather + '.png" title="' + getWeatherTitel(targetYearH, {'De':' (Datenstand 31.09.2022)','En':' (Data as of Sep. 31. 2022)'}, targetType, weather[0], lang) + '" alt="' + getAltWeather(weather, lang) + '"/>'
+                                    reHeader += '\n      </a>'                                   
+                
+                reHeader += '\n    </h5>'
+                reHeader += '\n  </div>'   
+                reHeader += '\n</div>'
+                
+                reTpComplete += reTp
+                reTp = ''
+        reHeader += '\n<div class="my-header-note">' 
+        reHeader += headerNoteDic[reHeader.count("/sdg-indicators/public/Wettersymbole/")][lang].replace('XXX', targetYearH)
+        reHeader += '\n</div>'
+                
+    for w in weatherLong:
+        re = re.replace(': ' + w + '\n', ': ' + weatherLong[w] + '\n')
+    if len(reTpComplete) > 0:
+        reTp = '\ngraph_target_points:' + reTpComplete + reTL
     if len(re3) > 0:
         re3 = '\ngraph_annotations:' + re3
-    return re, re2, re3
+    return re, reTp, re3, reHeader
+
+weatherLong = {'S': 'Sonne', 'W': 'Wolke','L':'Leicht bewölkt','B': 'Blitz'}
+headerNoteDic = {0:{'De':'','En':''},
+                 1:{'De':'Die Bewertung des Indikators beruht auf den Daten des Berichtsjahres XXX zum Stand 31.9.2022.','En':'The evaluation of the indicator is based on the data of the reporting year XXX as of Sep 31 2022.'},
+                 2:{'De':'Die Bewertung der Indikatoren beruht auf den Daten des Berichtsjahres XXX zum Stand 31.9.2022.','En':'The evaluations of the indicators are based on the data of the reporting year XXX as of Sep 31 2022.'}}
 
 def getValidFct (year, prevTgtYear, validTill):
     if pd.isnull(year) or not pd.isnull(validTill):
@@ -752,7 +859,7 @@ def getWeatherFct(index, lang):
             appendix = ['a','b','c','d','e','f','g','h']
             if lang == 'De':
                 re += '\n\nweather_active_' + str(c) + ': true'
-            re += '\nweather_indicator_' + str(c) + ': ' + indicators.loc[iNr, 'Indikator'] + ' ' + txtFct(indicators.loc[iNr, 'Bezeichnung für Plattform ' + lang], lang)
+            re += '\nweather_indicator_' + str(c) + ': ' + indicators.loc[iNr, 'Indikator'] + ' ' + txtFct('true', indicators.loc[iNr, 'Bezeichnung für Plattform ' + lang], lang)
             if lang == 'De':
                 # -- years -- 
                 for t in range(7):
@@ -769,7 +876,7 @@ def getWeatherFct(index, lang):
                 value = weather.loc[iNr, 'Altes Ziel ' + lang]
                 if not pd.isnull(value):
                     new = '_new'
-                    re += '\nweather_indicator_' + str(c) + '_target_old: ' + txtFct(weather.loc[iNr, 'Altes Ziel ' + lang], lang) + '\n'
+                    re += '\nweather_indicator_' + str(c) + '_target_old: ' + txtFct('true', weather.loc[iNr, 'Altes Ziel ' + lang], lang) + '\n'
                     if lang == 'De':
                         re += '\nweather_indicator_' + str(c) + "_target_old_date: '" + str(int(weather.loc[iNr, 'Altes Ziel gültig bis'])) + "'\n"
                     # -- weather --
@@ -786,7 +893,7 @@ def getWeatherFct(index, lang):
                             re += '\nweather_indicator_' + str(c) + '_old_item_' + appendix[t] + '_title: ' + title                         
                         elif t == 0:
                             re += '\nweather_indicator_' + str(c) + "_old_item_a: '-'"
-                re += '\nweather_indicator_' + str(c) + '_target' + new + ': ' + txtFct(indicators.loc[iNr, 'Ziel ' + lang], lang) + '\n'
+                re += '\nweather_indicator_' + str(c) + '_target' + new + ': ' + txtFct('true', indicators.loc[iNr, 'Ziel ' + lang], lang) + '\n'
                 
                 # -- weather --
                 for t in range(7):
@@ -803,14 +910,14 @@ def getWeatherFct(index, lang):
                     elif t == 0:
                         re += '\nweather_indicator_' + str(c) + new + "_item_a: '-'"    
             else:                                                   # -- multi targets        
-                re += '\nweather_indicator_' + str(c) + '_target: ' + txtFct(indicators.loc[iNr, 'Ziel ' + lang], lang)
+                re += '\nweather_indicator_' + str(c) + '_target: ' + txtFct('true', indicators.loc[iNr, 'Ziel ' + lang], lang)
                 for multiTarget in range(1,5):
                     re += '\n'
                     # -- old multi target? ---
                     new = ''
                     value = weather.loc[iNr, 'Altes Etappenziel ' + str(multiTarget) + ' ' + lang]
                     if not pd.isnull(value):
-                        re += '\nweather_indicator_' + str(c) + '_target_' + str(multiTarget) + '_old: ' + txtFct(value, lang)
+                        re += '\nweather_indicator_' + str(c) + '_target_' + str(multiTarget) + '_old: ' + txtFct('true', value, lang)
                         if lang == 'De':
                             re += '\nweather_indicator_' + str(c) + '_target_' + str(multiTarget) + "_old_date: '" + str(int(weather.loc[iNr, 'Altes Etappenziel ' + str(multiTarget) + ' gültig bis'])) + "'"
                             if weather.loc[iNr, 'Altes Etappenziel ' + str(multiTarget) + ' Jahr'] != 0:
@@ -832,7 +939,7 @@ def getWeatherFct(index, lang):
                             elif t == 0:
                                 re += '\nweather_indicator_' + str(c) + '_target_' + str(multiTarget) + "_old_item_a: '-'"
                     if not pd.isnull(weather.loc[iNr, 'Etappenziel ' + str(multiTarget) + ' ' + lang]):                       
-                        re += '\nweather_indicator_' + str(c) + '_target_' + str(multiTarget) + new + ': ' + txtFct(weather.loc[iNr, 'Etappenziel ' + str(multiTarget) + ' ' + lang], lang)
+                        re += '\nweather_indicator_' + str(c) + '_target_' + str(multiTarget) + new + ': ' + txtFct('true', weather.loc[iNr, 'Etappenziel ' + str(multiTarget) + ' ' + lang], lang)
                         if not pd.isnull(weather.loc[iNr, 'Etappenziel ' + str(multiTarget) + ' Jahr']):
                             re += '\nweather_indicator_' + str(c) + '_target_' + str(multiTarget) + new + "_year: '" + str(int(weather.loc[iNr, 'Etappenziel ' + str(multiTarget) + ' Jahr'])) + "'\n"
                         # -- weather --
@@ -862,7 +969,7 @@ def nanFct(inpt):
 
 def quotationFct(inpt):
     if ':' in inpt and not ((inpt[0] == "'" and inpt[-1] =="'") or (inpt[0] == '"' and inpt[-1] == '"')):
-        if '"' in inpt:                
+        if '"' in inpt or '“' in inpt:                
             return "'" + inpt.replace("'",'"') + "'"
         else:
             return '"' + inpt.replace('"',"'") + '"'#.replace('“',"'").replace('„',"'") + '"'
@@ -875,13 +982,15 @@ def replaceFct(dic, inpt, lang):
     inpt = decmark_reg.sub('&nbsp;',inpt) # replace all whitespaces between numeric values
     return inpt.replace('XXX', '')
         
-def txtFct (inpt, lang):
-    return quotationFct(replaceFct(abbDic, replaceFct(replaceDic, wrappingFct(nanFct(inpt)), lang), lang))
+def txtFct (withAbb, inpt, lang):
+    re = replaceFct(replaceDic, wrappingFct(nanFct(inpt)), lang)
+    if withAbb == 'true':
+        re = replaceFct(abbDic, re, lang)
+    return quotationFct(re)
 
 def undoAbbrFct (text, lang):
-    for abb in abbreviations.index:
-        if not pd.isnull(abbreviations.loc[abb, 'Klartext' + lang]):
-            text = text.replace('<abbr title="' + abbreviations.loc[abb, 'Klartext' + lang] + '">' + abb + '</abbr>', abb)
+    for abb in abbDic[lang]:
+        text = text.replace(abbDic[lang][abb], abb)
     return text
      
 def wrappingFct(inpt):
@@ -936,18 +1045,18 @@ for page in meta.index:                                                         
     \npublished: true\
     \ndata_non_statistical: false\
     \n\n\n#Metadata\
-    \nnational_indicator_available: " + txtFct(meta.loc[page, 'Tab_4a_Indikatorenblätter.BezDe'], 'De') + "\
-    \n\ndns_indicator_definition: " + txtFct(meta.loc[page, 'DefinitionDe'], 'De') + "\
-    \n\ndns_indicator_intention: "+ txtFct(meta.loc[page, 'IntentionDe'], 'De') +"\
+    \nnational_indicator_available: " + txtFct('true', meta.loc[page, 'Tab_4a_Indikatorenblätter.BezDe'], 'De') + "\
+    \n\ndns_indicator_definition: " + txtFct('true', meta.loc[page, 'DefinitionDe'], 'De') + "\
+    \n\ndns_indicator_intention: "+ txtFct('true', meta.loc[page, 'IntentionDe'], 'De') +"\
     \n\ndata_state: " + dataState['De'] + "\
-    \n\nindicator_name: " + undoAbbrFct(txtFct(meta.loc[page, 'Tab_4a_Indikatorenblätter.BezDe'], 'De'), 'De') + "\
-    \nsection: " + txtFct(meta.loc[page, 'Tab_2a_Bereiche.BezDe'], 'De') + "\
-    \npostulate: " + txtFct(meta.loc[page, 'Tab_3a_Postulate.BezDe'], 'De') + "\
+    \n\nindicator_name: " + txtFct('false', meta.loc[page, 'Tab_4a_Indikatorenblätter.BezDe'], 'De') + "\
+    \nsection: " + txtFct('true', meta.loc[page, 'Tab_2a_Bereiche.BezDe'], 'De') + "\
+    \npostulate: " + txtFct('true', meta.loc[page, 'Tab_3a_Postulate.BezDe'], 'De') + "\
     \ntarget_id: " + getTargetId(meta.loc[page, 'Tab_3a_Postulate.PNr']) + "\
     \nprevious: " + getFilename(getPreviousIndex(page, 'prev')) + "\
     \nnext: " + getFilename(getPreviousIndex(page, 'next')) + "\
     \n\n#content \
-    \ncontent_and_progress: " + addLinkFct(txtFct("<i>" + contentText['De'] + "</i><br>" + getContentFct(page, 'De'), 'De'), 'De').replace('<br>','<br><br>') + "\
+    \ncontent_and_progress: " + addLinkFct(txtFct('true', "<i>" + contentText['De'] + "</i><br>" + getContentFct(page, 'De'), 'De'), 'De').replace('<br>','<br><br>') + "\
     \n\n#Sources\
     \n" + getSourcesFct(page, 'De') + "\
     \n\n#Status\
@@ -956,8 +1065,8 @@ for page in meta.index:                                                         
     \n\ndata_show_map: " + str(meta.loc[page, 'Karte anzeigen?']).lower() + "\
     \ncopyright: '&copy; Statistisches Bundesamt (Destatis), " + year + "'\
     \n\n" + getFootnotes(page, 'De') + "\
-    \n\n" + undoAbbrFct(getSpecifiedStuff(page,'Grafiktitel', 5, 'title', '', ' De'), 'De') + "\
-    \n\n" + undoAbbrFct(getSpecifiedStuff(page,'Untertitel', 5, 'title', '', ' De'), 'De') + "\
+    \n\n" + getSpecifiedStuff(page,'Grafiktitel', 5, 'title', '', ' De') + "\
+    \n\n" + getSpecifiedStuff(page,'Untertitel', 5, 'title', '', ' De') + "\
     \n\n" + getWeatherFct2(page, 'De')[2] + "\
     \n\n" + getSpecifiedStuff(page, 'Dezimalstellen', 4, 'decimals', '', '') +"\
     \n\nspan_gaps: " + str(meta.loc[page, 'Lücken füllen?']).lower() + "\
@@ -970,25 +1079,25 @@ for page in meta.index:                                                         
     " + getStackedDisagg(page) + "\
     " + getSomething('x_axis_label', meta.loc[page,'x-Achsenbezeichnung De']) + "\
     " + getSomething('national_geographical_coverage', meta.loc[page,'Geografische Abdeckung De']) + "\
-    \n---\n\n" + getHeader(page, 'De'))
+    \n---\n\n" + getWeatherFct2(page, 'De')[3]) #getHeader(page, 'De'))
     # \n\n" + getAnnotations(page, 'De') + "\
     # \n\n" + getWeatherFct2(page, 'De')[2] + "\
     fileEn.write("---\n\nlanguage: en\
-    \nnational_indicator_available: " + txtFct(meta.loc[page, 'Tab_4a_Indikatorenblätter.BezEn'], 'En') + "\
-    \n\ndns_indicator_definition: " + txtFct(meta.loc[page, 'DefinitionEn'], 'En') + "\
-    \n\ndns_indicator_intention: "+ txtFct(meta.loc[page, 'IntentionEn'], 'En') +"\
+    \nnational_indicator_available: " + txtFct('true', meta.loc[page, 'Tab_4a_Indikatorenblätter.BezEn'], 'En') + "\
+    \n\ndns_indicator_definition: " + txtFct('true', meta.loc[page, 'DefinitionEn'], 'En') + "\
+    \n\ndns_indicator_intention: "+ txtFct('true', meta.loc[page, 'IntentionEn'], 'En') +"\
     \n\ndata_state: " + dataState['En'] + "\
-    \n\nindicator_name: " + undoAbbrFct(txtFct(meta.loc[page, 'Tab_4a_Indikatorenblätter.BezEn'], 'En'), 'En') + "\
-    \nsection: " + txtFct(meta.loc[page, 'Tab_2a_Bereiche.BezEn'], 'En') + "\
-    \npostulate: " + txtFct(meta.loc[page, 'Tab_3a_Postulate.BezEn'], 'En') + "\
+    \n\nindicator_name: " + txtFct('false', meta.loc[page, 'Tab_4a_Indikatorenblätter.BezEn'], 'En') + "\
+    \nsection: " + txtFct('true', meta.loc[page, 'Tab_2a_Bereiche.BezEn'], 'En') + "\
+    \npostulate: " + txtFct('true', meta.loc[page, 'Tab_3a_Postulate.BezEn'], 'En') + "\
     \n\n#content \
-    \ncontent_and_progress: " + txtFct("<i>" + contentText['En'] + "</i><br>" + getContentFct(page, 'En'), 'En').replace('<br>','<br><br>') + "\
+    \ncontent_and_progress: " + txtFct('true', "<i>" + contentText['En'] + "</i><br>" + getContentFct(page, 'En'), 'En').replace('<br>','<br><br>') + "\
     \n\n#Sources\
     \n" + getSourcesFct(page, 'En') + "\
     \ncopyright: '&copy; Federal Statistical Office (Destatis), " + year + "'\
     \n\n" + getFootnotes(page, 'En') + "\
-    \n\n" + undoAbbrFct(getSpecifiedStuff(page,'Grafiktitel', 5, 'title', '', ' En'), 'En') + "\
-    \n\n" + undoAbbrFct(getSpecifiedStuff(page,'Untertitel', 5, 'title', '', ' En'), 'En') + "\
+    \n\n" + getSpecifiedStuff(page,'Grafiktitel', 5, 'title', '', ' En') + "\
+    \n\n" + getSpecifiedStuff(page,'Untertitel', 5, 'title', '', ' En') + "\
     \n\n" + getAnnotations(page, 'En') + "\
     " + getSomething('x_axis_label', meta.loc[page,'x-Achsenbezeichnung En']) + "\
     " + getSomething('national_geographical_coverage', meta.loc[page,'Geografische Abdeckung En']) + "\

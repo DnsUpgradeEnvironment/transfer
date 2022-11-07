@@ -65,7 +65,7 @@ def txtFct(string):
     
 #since meta contains one dataset per indicator we`re using meta`s index as loop variable
 for page in meta.index: 
-    if page == '04.2.a,b' or page == '08.4':
+    if page == '04.2.a,bx' or page == '08.4x':
         continue
     else:
         #ibNr is present in both, meta and data, so we`re using it to get the relevant part of data                                                            
@@ -112,15 +112,16 @@ for page in meta.index:
         # Fill in years without data if mor than 3 years are available
         if halfYears == False and len(yearsWithValues) > 3:
             for year in range(int(yearsWithValues[0]), int(yearsWithValues[-1])):
-                if not year in yearsWithValues:
-                    yearsWithValues.append(year)
+                if not str(year) in yearsWithValues:
+                    yearsWithValues.append(str(year))
             
         # we also need a row for the target year(s)
         IbNr = meta.loc[page, 'Tab_4a_Indikatorenblätter.IbNr']
         dfT = weatherWithIndicatorInfos[(weatherWithIndicatorInfos.IbNr == IbNr)]
         for zielJahr in dfT.Zieljahr:
-            if not str(zielJahr) in yearsWithValues and not pd.isnull(zielJahr):
-                yearsWithValues.append(str(zielJahr))
+            if not pd.isnull(zielJahr):
+                if not str(int(zielJahr)) in yearsWithValues:
+                    yearsWithValues.append(str(int(zielJahr)))
                 
         #create a new dataframe with target shape
         #first create a list containing one dictionary for each year with value, containing the relevant columns
@@ -151,9 +152,10 @@ for page in meta.index:
                             line[column] = indicators.loc[pageData.loc[DNr, 'INr'], 'Bezeichnung für Plattform En'].lower()
                     for d in ['1', '2', '3']:
                         if column == pageData.loc[DNr, 'Disaggregation ' + d + ' Kategorie']:
-                            if meta.loc[page, 'Umschalten zwischen Zeitreihen?'] and column == 'K_SERIES':
-                                line['Series'] = expressions.loc[pageData.loc[DNr, 'Disaggregation ' + d + ' Ausprägung'], 'Ausprägung En'].lower()
-                                
+                            if column == 'K_SERIES':
+                                line['time series'] = expressions.loc[pageData.loc[DNr, 'Disaggregation ' + d + ' Ausprägung'], 'Ausprägung En'].lower()
+                                if meta.loc[page, 'Umschalten zwischen Zeitreihen?']:
+                                    line['Series'] = line.pop('time series')
                             elif float(str(year).replace(',','.')) < 2025:   
                                 line[categories.loc[column, 'Kategorie En'].lower()] = expressions.loc[pageData.loc[DNr, 'Disaggregation ' + d + ' Ausprägung'], 'Ausprägung En'].lower()
                                 
