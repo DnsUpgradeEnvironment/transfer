@@ -47,7 +47,7 @@ geoCodes = {'A_LAENDER_BW':'code08',
             'A_LAENDER_TH':'code16'}
 
 halfYearDic = {}
-for year in np.arange(1990, 2025, 0.5):
+for year in np.arange(1990, 2031, 0.5):
     halfYearDic[str(year).replace('.0','')] = str(year).replace('.0','/1').replace('.5','/2')
 
 # change the index of meta ("07.2.a,b") to become the filename of format "7-2-ab"
