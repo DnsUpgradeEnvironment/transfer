@@ -122,7 +122,7 @@ for page in meta.index:
             if not pd.isnull(zielJahr):
                 if not str(int(zielJahr)) in yearsWithValues:
                     yearsWithValues.append(str(int(zielJahr)))
-                
+        
         #create a new dataframe with target shape
         #first create a list containing one dictionary for each year with value, containing the relevant columns
         # e.g. [{'Year':2010, 'Units':'%', 'time series': 'lorem ipsum', 'age': '18 years', 'Value': 99.0},
@@ -136,7 +136,7 @@ for page in meta.index:
                 #if not pd.isnull(pageData.loc[DNr, str(year).replace('.',',')]):   #fill the dictionaries           
                 for column in columns:
                     if column == 'Year':
-                        if halfYears:
+                        if halfYears and float(year.replace(',','.')) < 2025:
                             line ['Year'] = halfYearDic[str(year).replace(',','.')]
                         else:
                             line['Year'] = str(year)
@@ -184,9 +184,16 @@ for page in meta.index:
                     columns[columns.index(column)] = 'time series'
         elif column[:2] == 'K_':
             columns[columns.index(column)] = categories.loc[column, 'Kategorie En'].lower()
+            
+   
     
     if len(targetData) > 0:
-        df = pd.DataFrame(targetData)  
+        df = pd.DataFrame(targetData) 
+        
+        # some indicators have ranges rather then single years:
+        if page == '03.1.e':
+            df = df.replace('2003', '2003-2006').replace('2014', '2014-2017')
+        
         #sort columns in smae order as are in columns list
         df = df[columns]
             
