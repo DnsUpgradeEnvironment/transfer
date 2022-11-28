@@ -20,10 +20,11 @@ toggle = 'Upgrade'
 #toggle = 'Prüf'
 #toggle = 'Staging'
 
-if toggle == 'Staging':
+if toggle == 'Upgrade':
     targetPath = path.replace('\\transfer', '\dns-data\meta')
 else:   
-    targetPath = path.replace('\\transfer','\dns-data\meta')
+    targetPath = path.replace('\\Documents\\MoBosse\\DnsUpgradeEnvironment\\transfer','\\Documents\\DNS\\Plattform\\open-sdg-data-starter\\meta')
+
     
 
 meta = pd.read_excel(path + '\\Exp_meta.xlsx')
@@ -53,16 +54,16 @@ year = date.strftime("%Y")
 
 # ----- Variables -----------
 
-dataState = {'De': 'Der Indikatorenbericht 2022 hat den Datenstand 31.10.2022. Die Daten auf dieser Plattform werden regelmäßig aktualisiert, sodass online aktuellere Daten verfügbar sein können als im <a href="https://dns-indikatoren.de/assets/publications/reports/de/2022.pdf">Indikatorenbericht 2022</a> veröffentlicht.',
-             'En': 'The data published in the indicator report 2022 is as of Oct 31 2022. The data shown on this platform is updated regularly, so that more current data may be available online than published in the <a href="https://dns-indikatoren.de/assets/publications/reports/en/2022.pdf">indicator report 2022</a>.'}
+dataState = {'De': 'Der Indikatorenbericht 2022 hat den Datenstand 31.10.2022. Die Daten auf dieser Plattform werden regelmäßig aktualisiert, sodass online aktuellere Daten verfügbar sein können als im <a href="https://dns-indikatoren.de/facts_publications/">Indikatorenbericht 2022</a> veröffentlicht.',
+             'En': 'The data published in the indicator report 2022 is as of Oct 31 2022. The data shown on this platform is updated regularly, so that more current data may be available online than published in the <a href="https://dns-indikatoren.de/en/facts_publications/">indicator report 2022</a>.'}
 
 dicFootnoteLabels = {'Sing De':'Anmerkung',
                'Plur De': 'Anmerkungen',
                'Sing En':'Note',
                'Plur En': 'Notes'}
 
-contentText = {'De': 'Text aus dem <a href="https://dns-indikatoren.de/assets/publications/reports/de/2022.pdf">Indikatorenbericht 2022 </a>',
-               'En': 'Text from the <a href="https://dns-indikatoren.de/assets/publications/reports/en/2021.pdf">Indicator Report 2021 </a>'}
+contentText = {'De': 'Text aus dem <a href="https://dns-indikatoren.de/facts_publications/">Indikatorenbericht 2022 </a>',
+               'En': 'Text from the <a href="https://dns-indikatoren.de/en/facts_publications/">Indicator Report 2021 </a>'}
 
 keyDict = {'Grafiktitel': 'graph_titles: ',
            'Untertitel': 'graph_subtitles: ',
@@ -94,20 +95,22 @@ replaceDic = {'De':
                    '100 000': '100&nbsp;000',
                    'CO2': u'CO\u2082',
                    'PM10': u'PM\u2081\u2080',
-                   'PM2,5': u'PM\u2082,\u2085',
-                   'PM0,1': u'PM\u2080,\u2081',
-                   'PM₅﮳₂': u'PM\u2082,\u2085',
+                   'PM2,5': u'PM\u2080.\u2085',
+                   'PM0,1': u'PM\u2080.\u2081',
+                   'PM0.1': u'PM\u2080.\u2081',
+                   'PM₅﮳₂': u'PM\u2082.\u2085',
                    '\n':'<br>',
                    'm3': u'm\u00B3',
                    'm2': u'm\u00B2',
                    'SO2': u'SO\u2082',
                    'NOx': 'NO\u2093',
                    'NH3': 'NH\u2083',
-                   'PM2.5': u'PM\u2082,\u2085',
+                   'PM2.5': u'PM\u2082.\u2085',
                    'CH4': u'CH\u2084',
                    'N2O': u'N\u2082O',
                    'SF6': u'SF\u2086',
-                   'NF3': u'NF\u2083'},
+                   'NF3': u'NF\u2083',
+                   ' – ': '&nbsp;–&nbsp;'},
               'En':
                   {'1.000':'1&nbsp;000',
                    '1 000':'1&nbsp;000',
@@ -128,7 +131,14 @@ replaceDic = {'De':
                    'CH4': u'CH\u2084',
                    'N2O': u'N\u2082O',
                    'SF6': u'SF\u2086',
-                   'NF3': u'NF\u2083'}}
+                   'NF3': u'NF\u2083',
+                   ' – ': '&nbsp;–&nbsp;'}}
+replaceDicTextOnly = {'De':
+                  {' -':' &#8209;',
+                   '+ ': '+&nbsp;',
+                   '‒ ': '‒&nbsp;'},
+              'En':
+                  {}}
 
 sdgColors =    [['e5243b', '891523', 'ef7b89', '2d070b', 'f4a7b0', 'b71c2f', 'ea4f62', '5b0e17', 'fce9eb'],
                 ['dda63a', '896d1f', 'efd385', '2d240a', 'f4e2ae', 'b7922a', 'eac55d', '5b4915', 'f9f0d6'],
@@ -147,9 +157,9 @@ sdgColors =    [['e5243b', '891523', 'ef7b89', '2d070b', 'f4a7b0', 'b71c2f', 'ea
                 ['56c02b', '337319', '99d97f', '112608', 'ddf2d4', '449922', '77cc55', '224c11', 'bbe5aa'],
                 ['00689d', '00293e', '99c2d7', '00486d', '4c95ba', '126b80', 'cce0eb', '5a9fb0', 'a1c8d2'],
                 ['19486a', '0a1c2a', '8ca3b4', '16377c', 'd1dae1', '11324a', '466c87', '5b73a3', '0f2656']]    
+
 #for finding numbers with whitespace as decimal seperator:
 decmark_reg = re.compile('(?<=\d) ')
-
 
 titleDic = {'linkToSrcOrga':{
                 'De':{
@@ -167,7 +177,10 @@ def getWeatherTitel(year, asOfData, typus, ws, lang):
     if pd.isnull(ws):
         return 'No evaluation possible.'
     elif pd.isnull(typus):
-        return 'Different target types.'
+        if lang == 'De':
+            return 'Hier sind die unterschiedlichen Zieltypen der beiden, zeitgleich zu erreichenden, Ziele kombiniert worden.'
+        else:
+            return 'Different target types.'
     elif year == "current":
         return weatherTitleDic['current'][typus][ws][lang]
     else:
@@ -203,11 +216,11 @@ weatherTitleDic= {'current':
                                    'En': 'Neither the average value nor the last change points in the right direction.'}}},
                   'former':
                     {'K':
-                      {'S':{'De': 'Bei Fortsetzung der Entwicklung aus XXX wäre der Zielwert erreicht oder um weniger als 5&nbsp;% der Differenz zwischen Zielwert und dem damaligen Wert verfehlt worden.',
+                      {'S':{'De': 'Bei Fortsetzung der Entwicklung aus XXX wäre der Zielwert erreicht oder um weniger als 5&nbsp;% der Differenz zwischen Zielwert und dem Wert aus XXX verfehlt worden.',
                                'En': 'If the trend from XXX had continued, the target value would have been reached or missed by less than 5% of the difference between the target value and the value at that time.'},
-                      'L':{'De': 'Bei Fortsetzung der Entwicklung von XXX wäre das Ziel um mindestens 5&nbsp;%, aber maximal um 20&nbsp;% der Differenz zwischen Zielwert und dem damaligen Wert verfehlt worden.',
+                      'L':{'De': 'Bei Fortsetzung der Entwicklung von XXX wäre das Ziel um mindestens 5&nbsp;%, aber maximal um 20&nbsp;% der Differenz zwischen Zielwert und dem Wert aus XXX verfehlt worden.',
                                'En': 'If the development from XXX had continued, the target had been missed by at least 5%, but by a maximum of 20% of the difference between the target value and the value at that time.'},
-                      'W':{'De': 'Der Indikator entwickelte sich in XXX zwar in die gewünschte Richtung auf das Ziel zu, bei Fortsetzung der Entwicklung wäre das Ziel im Zieljahr aber um mehr als 20 % der Differenz zwischen Zielwert und dem damaligen Wert verfehlt worden.',
+                      'W':{'De': 'Der Indikator entwickelte sich in XXX zwar in die gewünschte Richtung auf das Ziel zu, bei Fortsetzung der Entwicklung wäre das Ziel im Zieljahr aber um mehr als 20 % der Differenz zwischen Zielwert und dem Wert aus XXX verfehlt worden.',
                                'En': 'Although the indicator has in XXX been moving in the desired direction toward the target, if the trend had to continued, the target would have been missed in the target year by more than 20% of the difference between the target value and the value at that time.'},
                       'B':{'De': 'Der Abstand zum Ziel war in XXX konstant hoch oder hat sich vergrößert. Der Indikator entwickelte sich also nicht in die gewünschte Richtung.',
                                'En': 'In XXX the distance to the target was constantly high or had increased. Thus, the indicator did not develop in the desired direction.'}},
@@ -237,12 +250,45 @@ def addLinkFct(text, lang):
     indList.remove(page)
     for i in indList:
         repl = i.lstrip('0').replace(',',', ')
-        if '1' + repl + ' ' in text or '1' + repl + ')' in text:
+        if ('1' + repl + ' ' in text or '1' + repl + ')' in text) and not page == '1' + i.lstrip('0') :
             text = text.replace('1' + repl, '<a href="' + pageLinkDic[toggle][lang].replace('status','') + getFilename('1'+repl) + '">' + '1' + repl + '</a>')
             indList.remove('1'+i.lstrip('0'))
         elif repl + '&nbsp;' in text or repl + ' ' in text or repl + ')' in text:
             text = text.replace(repl, '<a href="' + pageLinkDic[toggle][lang].replace('status','') + getFilename(i) + '">' + repl + '</a>')
+            
+    for i in singleIndList:
+        text = text.replace(' ' + i, ' ' + singleIndList[i])
     return text
+
+singleIndList = {'1.1.a': '<a href="' + pageLinkDic[toggle]['De'].replace('status','') + '1-1-ab">1.1.a</a>',
+                 '1.1.b': '<a href="' + pageLinkDic[toggle]['De'].replace('status','') + '1-1-ab">1.1.b</a>',
+                 '3.1.a': '<a href="' + pageLinkDic[toggle]['De'].replace('status','') + '3-1-ab">3.1.a</a>',
+                 '3.1.b': '<a href="' + pageLinkDic[toggle]['De'].replace('status','') + '3-1-ab">3.1.b</a>',
+                 '3.1.c': '<a href="' + pageLinkDic[toggle]['De'].replace('status','') + '3-1-cd">3.1.c</a>',
+                 '3.1.d': '<a href="' + pageLinkDic[toggle]['De'].replace('status','') + '3-1-cd">3.1.d</a>',
+                 '4.2.a': '<a href="' + pageLinkDic[toggle]['De'].replace('status','') + '4-2-ab">4.2.a</a>',
+                 '4.2.b': '<a href="' + pageLinkDic[toggle]['De'].replace('status','') + '4-2-ab">4.2.b</a>',
+                 '5.1.b': '<a href="' + pageLinkDic[toggle]['De'].replace('status','') + '5-1-bc">5.1.b</a>',
+                 '5.1.c': '<a href="' + pageLinkDic[toggle]['De'].replace('status','') + '5-1-bc">5.1.c</a>',
+                 '6.2.a': '<a href="' + pageLinkDic[toggle]['De'].replace('status','') + '6-2-ab">6.2.a</a>',
+                 '6.2.b': '<a href="' + pageLinkDic[toggle]['De'].replace('status','') + '6-2-ab">6.2.b</a>',
+                 '7.1.a': '<a href="' + pageLinkDic[toggle]['De'].replace('status','') + '7-1-ab">7.1.a</a>',
+                 '7.1.b': '<a href="' + pageLinkDic[toggle]['De'].replace('status','') + '7-1-ab">7.1.b</a>',
+                 '8.2.a': '<a href="' + pageLinkDic[toggle]['De'].replace('status','') + '8-2-ab">8.2.a</a>',
+                 '8.2.b': '<a href="' + pageLinkDic[toggle]['De'].replace('status','') + '8-2-ab">8.2.b</a>',
+                 '8.5.a': '<a href="' + pageLinkDic[toggle]['De'].replace('status','') + '8-5-ab">8.5.a</a>',
+                 '8.5.b': '<a href="' + pageLinkDic[toggle]['De'].replace('status','') + '8-5-ab">8.5.b</a>',
+                 '12.1.ba': '<a href="' + pageLinkDic[toggle]['De'].replace('status','') + '12-1-b">12.1.ba</a>',
+                 '12.1.bb': '<a href="' + pageLinkDic[toggle]['De'].replace('status','') + '12-1-b">12.1.bb</a>',
+                 '12.1.bc': '<a href="' + pageLinkDic[toggle]['De'].replace('status','') + '12-1-b">12.1.bc</a>',
+                 '12.3.a' : '<a href="' + pageLinkDic[toggle]['De'].replace('status','') + '12-3-ab">12.3.a</a>',
+                 '12.3.b' : '<a href="' + pageLinkDic[toggle]['De'].replace('status','') + '12-3-ab">12.3.b</a>',
+                 '14.1.aa': '<a href="' + pageLinkDic[toggle]['De'].replace('status','') + '14-1-a">14.1.aa</a>',
+                 '14.1.ab': '<a href="' + pageLinkDic[toggle]['De'].replace('status','') + '14-1-a">14.1.ab</a>',
+                 '15.3.a' : '<a href="' + pageLinkDic[toggle]['De'].replace('status','') + '15-3-ab">15.3.a</a>',
+                 '15.3.b' : '<a href="' + pageLinkDic[toggle]['De'].replace('status','') + '15-3-ab">15.3.b</a>',
+                 '16.3.a' : '<a href="' + pageLinkDic[toggle]['De'].replace('status','') + '16-1-ab">16.3.a</a>',
+                 '16.3.b' : '<a href="' + pageLinkDic[toggle]['De'].replace('status','') + '16-1-ab">16.3.b</a>'}
 
 
 transl = {'De': 'Ziel', 'En': 'Target', 'DeEveryYear': 'Jährliches Ziel', 'EnEveryYear': 'Constant target'}
@@ -322,9 +368,9 @@ def getFootnotes(index, lang):
         if not pd.isnull(footnote):
             footnote = footnote.replace('\n','<br>')
             if '<br>' in footnote:
-                return 'data_footnotes: ' + txtFct('true', footnote.replace('<br>', '<br>• '), lang)
+                return 'data_footnotes: ' + txtFct('false', 'true', footnote.replace('<br>', '<br>• '), lang)
             else:
-                return 'data_footnote: ' + txtFct('true', footnote, lang)
+                return 'data_footnote: ' + txtFct('false', 'true', footnote, lang)
         else:
             return re       
     else:
@@ -354,14 +400,14 @@ def getFootnotes(index, lang):
                         print("Error: Wrong key at footer field specificaion.", index)
                 else:
                         re += '\n  - '
-                re += 'label: ' + txtFct('true', dicFootnoteLabels[case + lang], lang)
-                re += '\n    value: ' + txtFct('true', value.replace('<br>', '<br>• '), lang) 
+                re += 'label: ' + txtFct('false', 'true', dicFootnoteLabels[case + lang], lang)
+                re += '\n    value: ' + txtFct('false', 'true', value.replace('<br>', '<br>• '), lang) 
         # case general footnote plus specified footnote --> generel part needs to be added as specified for the rest
         if not pd.isnull(footnote) and len(specList) < len(possSpec): 
             for spec in list(set(possSpec) - set(specList)):
                 re += '\n  - series: ' + indicators.loc[spec, 'Bezeichnung für Plattform En'].lower()
-                re += '\n    label: ' + txtFct('true', dicFootnoteLabels[case + lang], lang)
-                re += '\n    value: ' + txtFct('true', footnote.replace('<br>', '<br>• '), lang) 
+                re += '\n    label: ' + txtFct('false', 'true', dicFootnoteLabels[case + lang], lang)
+                re += '\n    value: ' + txtFct('false', 'true', footnote.replace('<br>', '<br>• '), lang) 
     return re
 
 def getHeader(index, lang):
@@ -371,8 +417,8 @@ def getHeader(index, lang):
         if not pd.isnull(indicators.loc[iNr, 'Ziel kurz ' + lang]):
             re += '\n<div>'
             re += '\n  <div class="my-header">'
-            re += '\n    <label class="default">' + txtFct('true', indicators.loc[iNr, 'Indikator kurz ' + lang], lang) + ': ' 
-            re += txtFct('true', indicators.loc[iNr, 'Ziel kurz ' + lang], lang)
+            re += '\n    <label class="default">' + txtFct('false', 'true', indicators.loc[iNr, 'Indikator kurz ' + lang], lang) + ': ' 
+            re += txtFct('false', 'true', indicators.loc[iNr, 'Ziel kurz ' + lang], lang)
             if not pd.isnull(weather.loc[iNr, 'Ws t-0']):
                 wth = weather.loc[iNr, 'Ws t-0']
             elif not pd.isnull(weather.loc[iNr, 'Etappenziel 1 Ws t-0']):
@@ -475,7 +521,7 @@ def getSourcesFct(index, lang):
         for linkId in srcDic[orgaId]:
             d += 1
             re += '\nsource_url_' + str(c) + appendix[d] + ": '" + getLanguageDependingContent(links, linkId, 'Link ', lang) + "'"
-            re += '\nsource_url_text_' + str(c) + appendix[d] + ': ' + txtFct('true', links.loc[linkId, 'Text ' + lang], lang)
+            re += '\nsource_url_text_' + str(c) + appendix[d] + ': ' + txtFct('false', 'true', links.loc[linkId, 'Text ' + lang], lang)
         re += '\n'  
     return re
 
@@ -499,13 +545,13 @@ def getSpecifiedStuff(index, key, upperRange, nameOne, nameTwo, lang):
             for i in allSeries:
                 if i[0] == 'Z' and not pd.isnull(indicators.loc[i, 'Bezeichnung für Plattform En']):
                     re += '\n  - series: ' + indicators.loc[i, 'Bezeichnung für Plattform En'].lower()
-                    re += '\n    title: ' + txtFct('false', meta.loc[index, key + ' 1' + lang], lang[1:3]) 
+                    re += '\n    title: ' + txtFct('false', 'false', meta.loc[index, key + ' 1' + lang], lang[1:3]) 
                 elif i[0:2] == 'A_':
                     re += '\n  - series: ' + expressions.loc[i, 'Ausprägung En'].lower()
-                    re += '\n    title: ' + txtFct('false', meta.loc[index, key + ' 1' + lang], lang[1:3])              
+                    re += '\n    title: ' + txtFct('false', 'false', meta.loc[index, key + ' 1' + lang], lang[1:3])              
             
         else:
-            re += keyDict[key].replace('titles','title') + txtFct('false', meta.loc[index, key + ' 1' + lang], lang[1:3])
+            re += keyDict[key].replace('titles','title') + txtFct('false', 'false', meta.loc[index, key + ' 1' + lang], lang[1:3])
             
         
     elif key == 'Grafiktyp' and pd.isnull(meta.loc[index, 'Grafiktyp 1 Spezifikation']):
@@ -541,7 +587,7 @@ def getSpecifiedStuff(index, key, upperRange, nameOne, nameTwo, lang):
 def getSeriesBreakValue(index, breakYear, key, spec, lang):
     if not key == 'Zeitreihenbruch':
         if lang != '':
-            return txtFct('false', breakYear, lang[1:3])
+            return txtFct('false', 'false', breakYear, lang[1:3])
         else:
             return str(breakYear)
     else:
@@ -636,7 +682,7 @@ def getWeatherFct2(index, lang):
                 counter += 1
                 if lang == 'De':
                     re += '\n\nweather_active_' + str(counter) + ': true' 
-                re += '\nweather_indicator_' + str(counter) + ': ' + indicators.loc[INr, 'Indikator'] + ' ' + txtFct('false', indicators.loc[INr, 'Bezeichnung für Plattform ' + lang], lang)
+                re += '\nweather_indicator_' + str(counter) + ': ' + indicators.loc[INr, 'Indikator'] + ' ' + txtFct('false', 'false', indicators.loc[INr, 'Bezeichnung für Plattform ' + lang], lang)
                 
                 # Years
                 years = [str(x) for x in range(2010, 2026)]
@@ -647,7 +693,7 @@ def getWeatherFct2(index, lang):
                         yearCounter += 1
                 
                 # Actual target
-                re += '\n\nweather_indicator_' + str(counter) + '_target: ' + txtFct('true', indicators.loc[INr, 'Ziel ' + lang], lang)
+                re += '\n\nweather_indicator_' + str(counter) + '_target: ' + txtFct('false', 'true', indicators.loc[INr, 'Ziel ' + lang], lang)
                 
                 #-------------------------------------------------------------------------------------    
                 # header from here
@@ -655,8 +701,8 @@ def getWeatherFct2(index, lang):
                     targetYearH = ''
                     reHeader += '\n<div>'
                     reHeader += '\n  <div class="my-header">'
-                    reHeader += '\n    <label class="default">' + txtFct('true', indicators.loc[INr, 'Indikator kurz ' + lang], lang) + ': ' 
-                    reHeader += txtFct('true', indicators.loc[INr, 'Ziel kurz ' + lang], lang)
+                    reHeader += '\n    <label class="default">' + txtFct('false', 'true', indicators.loc[INr, 'Indikator kurz ' + lang], lang) + ': ' 
+                    reHeader += txtFct('false', 'true', indicators.loc[INr, 'Ziel kurz ' + lang], lang)
                 
                 # Loop through all available targets
                 targetCounter = 0
@@ -675,19 +721,23 @@ def getWeatherFct2(index, lang):
                     targetCounter +=1
                     re += '\n\nweather_indicator_' + str(counter) + '_target_' + str(targetCounter) + ': '
                     if 'ZielÜbersichtDe' in dfI.columns:
-                        re += txtFct('true', dfI.loc[target, 'ZielÜbersicht' + lang], lang)
+                        re += txtFct('false', 'true', dfI.loc[target, 'ZielÜbersicht' + lang], lang)
                     else:
-                        re += txtFct('true', indicators.loc[INr, 'Ziel ' + lang], lang)
+                        re += txtFct('false', 'true', indicators.loc[INr, 'Ziel ' + lang], lang)
                     
                     # type of target
                     targetType = 'normal'
                    
-                    #if not pd.isnull(dfI.loc[target, 'Gültig seit']):
-                        #targetType = 'new'                
+                    if not pd.isnull(dfI.loc[target, 'Gültig seit']):
+                        targetType = 'new'                
                     if not pd.isnull(dfI.loc[target, 'Gültig bis']):
                         targetType = 'old'
+                    re += '\nweather_indicator_' + str(counter) + '_target_' + str(targetCounter) + '_category: '
+                    if target == 'W_1301a_2020' or target == 'W_1301b_2020' or target == 'W_0702b_2020' or target == 'W_0402b_2020':
+                        re += 'normal'
+                    else: 
+                        re += targetType
                         
-                    re += '\nweather_indicator_' + str(counter) + '_target_' + str(targetCounter) + '_category: ' + targetType
                     if not pd.isnull(dfI.loc[target, 'Zieljahr']):
                          re += '\nweather_indicator_' + str(counter) + '_target_' + str(targetCounter) + '_targetYear: ' + str(int(dfI.loc[target, 'Zieljahr']))
                             
@@ -711,7 +761,7 @@ def getWeatherFct2(index, lang):
                         re += '\nweather_indicator_' + str(counter) + '_target_' + str(targetCounter) + '_item_a:' 
                     if 'Anmerkung' + lang in dfI.columns:
                         if not pd.isnull(dfI.loc[target, 'Anmerkung' + lang]):
-                            re += '\nweather_indicator_' + str(counter) + '_target_' + str(targetCounter) + '_note: ' + txtFct('true', dfI.loc[target, 'Anmerkung' + lang], lang)
+                            re += '\nweather_indicator_' + str(counter) + '_target_' + str(targetCounter) + '_note: ' + txtFct('false', 'true', dfI.loc[target, 'Anmerkung' + lang], lang)
                     
                     # graph_target_points from here
                     if dfI.loc[target, 'InGrafikAnzeigen?']:
@@ -947,7 +997,7 @@ headerNoteDic = {0:{'De':'(Keine Bewertung möglich)','En':'(No evaluation possi
                  3:{'De':'(Bewertungen aus dem Indikatorenbericht 2022, bezogen auf das Berichtsjahr XXX)','En':'(Evaluations of the indicator report 2022 relating to the reporting year XXX)'}}
 
 def getValidFct (year, targetYear, prevTgtYear, validTill, notValid):
-    if not pd.isnull(validTill) or not notValid:
+    if not notValid:
         return 'false'
     elif not pd.isnull(prevTgtYear):
         if prevTgtYear >= int(year):
@@ -971,7 +1021,7 @@ def getWeatherFct(index, lang):
             appendix = ['a','b','c','d','e','f','g','h']
             if lang == 'De':
                 re += '\n\nweather_active_' + str(c) + ': true'
-            re += '\nweather_indicator_' + str(c) + ': ' + indicators.loc[iNr, 'Indikator'] + ' ' + txtFct('true', indicators.loc[iNr, 'Bezeichnung für Plattform ' + lang], lang)
+            re += '\nweather_indicator_' + str(c) + ': ' + indicators.loc[iNr, 'Indikator'] + ' ' + txtFct('false', 'true', indicators.loc[iNr, 'Bezeichnung für Plattform ' + lang], lang)
             if lang == 'De':
                 # -- years -- 
                 for t in range(7):
@@ -988,7 +1038,7 @@ def getWeatherFct(index, lang):
                 value = weather.loc[iNr, 'Altes Ziel ' + lang]
                 if not pd.isnull(value):
                     new = '_new'
-                    re += '\nweather_indicator_' + str(c) + '_target_old: ' + txtFct('true', weather.loc[iNr, 'Altes Ziel ' + lang], lang) + '\n'
+                    re += '\nweather_indicator_' + str(c) + '_target_old: ' + txtFct('false', 'true', weather.loc[iNr, 'Altes Ziel ' + lang], lang) + '\n'
                     if lang == 'De':
                         re += '\nweather_indicator_' + str(c) + "_target_old_date: '" + str(int(weather.loc[iNr, 'Altes Ziel gültig bis'])) + "'\n"
                     # -- weather --
@@ -1005,7 +1055,7 @@ def getWeatherFct(index, lang):
                             re += '\nweather_indicator_' + str(c) + '_old_item_' + appendix[t] + '_title: ' + title                         
                         elif t == 0:
                             re += '\nweather_indicator_' + str(c) + "_old_item_a: '-'"
-                re += '\nweather_indicator_' + str(c) + '_target' + new + ': ' + txtFct('true', indicators.loc[iNr, 'Ziel ' + lang], lang) + '\n'
+                re += '\nweather_indicator_' + str(c) + '_target' + new + ': ' + txtFct('false', 'true', indicators.loc[iNr, 'Ziel ' + lang], lang) + '\n'
                 
                 # -- weather --
                 for t in range(7):
@@ -1022,14 +1072,14 @@ def getWeatherFct(index, lang):
                     elif t == 0:
                         re += '\nweather_indicator_' + str(c) + new + "_item_a: '-'"    
             else:                                                   # -- multi targets        
-                re += '\nweather_indicator_' + str(c) + '_target: ' + txtFct('true', indicators.loc[iNr, 'Ziel ' + lang], lang)
+                re += '\nweather_indicator_' + str(c) + '_target: ' + txtFct('false', 'true', indicators.loc[iNr, 'Ziel ' + lang], lang)
                 for multiTarget in range(1,5):
                     re += '\n'
                     # -- old multi target? ---
                     new = ''
                     value = weather.loc[iNr, 'Altes Etappenziel ' + str(multiTarget) + ' ' + lang]
                     if not pd.isnull(value):
-                        re += '\nweather_indicator_' + str(c) + '_target_' + str(multiTarget) + '_old: ' + txtFct('true', value, lang)
+                        re += '\nweather_indicator_' + str(c) + '_target_' + str(multiTarget) + '_old: ' + txtFct('false', 'true', value, lang)
                         if lang == 'De':
                             re += '\nweather_indicator_' + str(c) + '_target_' + str(multiTarget) + "_old_date: '" + str(int(weather.loc[iNr, 'Altes Etappenziel ' + str(multiTarget) + ' gültig bis'])) + "'"
                             if weather.loc[iNr, 'Altes Etappenziel ' + str(multiTarget) + ' Jahr'] != 0:
@@ -1051,7 +1101,7 @@ def getWeatherFct(index, lang):
                             elif t == 0:
                                 re += '\nweather_indicator_' + str(c) + '_target_' + str(multiTarget) + "_old_item_a: '-'"
                     if not pd.isnull(weather.loc[iNr, 'Etappenziel ' + str(multiTarget) + ' ' + lang]):                       
-                        re += '\nweather_indicator_' + str(c) + '_target_' + str(multiTarget) + new + ': ' + txtFct('true', weather.loc[iNr, 'Etappenziel ' + str(multiTarget) + ' ' + lang], lang)
+                        re += '\nweather_indicator_' + str(c) + '_target_' + str(multiTarget) + new + ': ' + txtFct('false', 'true', weather.loc[iNr, 'Etappenziel ' + str(multiTarget) + ' ' + lang], lang)
                         if not pd.isnull(weather.loc[iNr, 'Etappenziel ' + str(multiTarget) + ' Jahr']):
                             re += '\nweather_indicator_' + str(c) + '_target_' + str(multiTarget) + new + "_year: '" + str(int(weather.loc[iNr, 'Etappenziel ' + str(multiTarget) + ' Jahr'])) + "'\n"
                         # -- weather --
@@ -1094,8 +1144,10 @@ def replaceFct(dic, inpt, lang):
     inpt = decmark_reg.sub('&nbsp;',inpt) # replace all whitespaces between numeric values
     return inpt.replace('XXX', '')
         
-def txtFct (withAbb, inpt, lang):
+def txtFct (textInpt, withAbb, inpt, lang):
     re = replaceFct(replaceDic, wrappingFct(nanFct(inpt)), lang)
+    if textInpt == 'true':
+        re = replaceFct(replaceDicTextOnly, wrappingFct(nanFct(re)), lang)      
     if withAbb == 'true':
         re = replaceFct(abbDic, re, lang)
     else:
@@ -1108,7 +1160,8 @@ def undoAbbrFct (text, lang):
     return text
      
 def wrappingFct(inpt):
-    return inpt.replace('\n','<br><br>')
+    return (inpt)
+    #return inpt.replace('\n','<br><br>')
     
 def getSdgIndicators(index):
     re = ''
@@ -1171,18 +1224,18 @@ for page in meta.index:                                                         
     \npublished: true\
     \ndata_non_statistical: false\
     \n\n\n#Metadata\
-    \nnational_indicator_available: " + txtFct('true', meta.loc[page, 'Tab_4a_Indikatorenblätter.BezDe'], 'De') + "\
-    \n\ndns_indicator_definition: " + txtFct('true', meta.loc[page, 'DefinitionDe'], 'De') + "\
-    \n\ndns_indicator_intention: "+ txtFct('true', meta.loc[page, 'IntentionDe'], 'De') +"\
+    \nnational_indicator_available: " + txtFct('false', 'true', meta.loc[page, 'Tab_4a_Indikatorenblätter.BezDe'], 'De') + "\
+    \n\ndns_indicator_definition: " + txtFct('true', 'true', meta.loc[page, 'DefinitionDe'], 'De') + "\
+    \n\ndns_indicator_intention: "+ txtFct('true', 'true', meta.loc[page, 'IntentionDe'], 'De') +"\
     \n\ndata_state: " + dataState['De'] + "\
-    \n\nindicator_name: " + txtFct('false', meta.loc[page, 'Tab_4a_Indikatorenblätter.BezDe'], 'De') + "\
-    \nsection: " + txtFct('true', meta.loc[page, 'Tab_2a_Bereiche.BezDe'], 'De') + "\
-    \npostulate: " + txtFct('true', meta.loc[page, 'Tab_3a_Postulate.BezDe'], 'De') + "\
+    \n\nindicator_name: " + txtFct('false', 'false', meta.loc[page, 'Tab_4a_Indikatorenblätter.BezDe'], 'De') + "\
+    \nsection: " + txtFct('false', 'true', meta.loc[page, 'Tab_2a_Bereiche.BezDe'], 'De') + "\
+    \npostulate: " + txtFct('false', 'true', meta.loc[page, 'Tab_3a_Postulate.BezDe'], 'De') + "\
     \ntarget_id: " + getTargetId(meta.loc[page, 'Tab_3a_Postulate.PNr']) + "\
     \nprevious: " + getFilename(getPreviousIndex(page, 'prev')) + "\
     \nnext: " + getFilename(getPreviousIndex(page, 'next')) + "\
     \n\n#content \
-    \ncontent_and_progress: " + addLinkFct(txtFct('true', "<b>" + contentText['De'] + "</b><br>" + getContentFct(page, 'De'), 'De'), 'De').replace('<br>','<br><br>') + "\
+    \ncontent_and_progress: " + addLinkFct(txtFct('true', 'true', "<b>" + contentText['De'] + "</b><br>" + getContentFct(page, 'De'), 'De'), 'De').replace('<br>','<br><br>') + "\
     \n\n#Sources\
     \n" + getSourcesFct(page, 'De') + "\
     \n\n#Status\
@@ -1209,15 +1262,15 @@ for page in meta.index:                                                         
     # \n\n" + getAnnotations(page, 'De') + "\
     # \n\n" + getWeatherFct2(page, 'De')[2] + "\
     fileEn.write("---\n\nlanguage: en\
-    \nnational_indicator_available: " + txtFct('true', meta.loc[page, 'Tab_4a_Indikatorenblätter.BezEn'], 'En') + "\
-    \n\ndns_indicator_definition: " + txtFct('true', meta.loc[page, 'DefinitionEn'], 'En') + "\
-    \n\ndns_indicator_intention: "+ txtFct('true', meta.loc[page, 'IntentionEn'], 'En') +"\
+    \nnational_indicator_available: " + txtFct('false', 'true', meta.loc[page, 'Tab_4a_Indikatorenblätter.BezEn'], 'En') + "\
+    \n\ndns_indicator_definition: " + txtFct('true', 'true', meta.loc[page, 'DefinitionEn'], 'En') + "\
+    \n\ndns_indicator_intention: "+ txtFct('ture', 'true', meta.loc[page, 'IntentionEn'], 'En') +"\
     \n\ndata_state: " + dataState['En'] + "\
-    \n\nindicator_name: " + txtFct('false', meta.loc[page, 'Tab_4a_Indikatorenblätter.BezEn'], 'En') + "\
-    \nsection: " + txtFct('true', meta.loc[page, 'Tab_2a_Bereiche.BezEn'], 'En') + "\
-    \npostulate: " + txtFct('true', meta.loc[page, 'Tab_3a_Postulate.BezEn'], 'En') + "\
+    \n\nindicator_name: " + txtFct('false', 'false', meta.loc[page, 'Tab_4a_Indikatorenblätter.BezEn'], 'En') + "\
+    \nsection: " + txtFct('false', 'true', meta.loc[page, 'Tab_2a_Bereiche.BezEn'], 'En') + "\
+    \npostulate: " + txtFct('false', 'true', meta.loc[page, 'Tab_3a_Postulate.BezEn'], 'En') + "\
     \n\n#content \
-    \ncontent_and_progress: " + txtFct('true', "<b>" + contentText['En'] + "</b><br>" + getContentFct(page, 'En'), 'En').replace('<br>','<br><br>') + "\
+    \ncontent_and_progress: " + txtFct('true', 'true', "<b>" + contentText['En'] + "</b><br>" + getContentFct(page, 'En'), 'En').replace('<br>','<br><br>') + "\
     \n\n#Sources\
     \n" + getSourcesFct(page, 'En') + "\
     \ncopyright: '&copy; Federal Statistical Office (Destatis), " + year + "'\

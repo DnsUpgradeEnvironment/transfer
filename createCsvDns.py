@@ -11,7 +11,16 @@ import os
 
 #get the current path and the path where to save the files
 path = os.getcwd()
-targetPath = path.replace('\\transfer', '\dns-data\data\\')
+
+#toggle = 'Upgrade'
+#toggle = 'Prüf'
+toggle = 'Staging'
+
+if toggle == 'Upgrade':
+    targetPath = path.replace('\\transfer', '\dns-data\data\\')
+else:   
+    targetPath = path.replace('\\Documents\\MoBosse\\DnsUpgradeEnvironment\\transfer','\\Documents\\DNS\\Plattform\\open-sdg-data-starter\\data\\')
+
 
 #read some xlsx files
 meta = pd.read_excel(path + '\\Exp_meta.xlsx')
@@ -72,6 +81,7 @@ for page in meta.index:
         ibNr = meta.loc[page, 'Tab_4a_Indikatorenblätter.IbNr']
         #now pageData only consist of the page`s datasets
         pageData = data[data.IbNr == ibNr]
+        
         print(page)
         
         
@@ -107,8 +117,7 @@ for page in meta.index:
                 yearsWithValues.append(year)
                 if ',5' in year:
                     halfYears = True
-
-        
+  
         # Fill in years without data if mor than 3 years are available
         if halfYears == False and len(yearsWithValues) > 3:
             for year in range(int(yearsWithValues[0]), int(yearsWithValues[-1])):
@@ -156,7 +165,11 @@ for page in meta.index:
                                 line['time series'] = expressions.loc[pageData.loc[DNr, 'Disaggregation ' + d + ' Ausprägung'], 'Ausprägung En'].lower()
                                 if meta.loc[page, 'Umschalten zwischen Zeitreihen?']:
                                     line['Series'] = line.pop('time series')
+                            
                             elif float(str(year).replace(',','.')) < 2025:   
+                                line[categories.loc[column, 'Kategorie En'].lower()] = expressions.loc[pageData.loc[DNr, 'Disaggregation ' + d + ' Ausprägung'], 'Ausprägung En'].lower()
+                            
+                            elif pageData.loc[DNr, 'Disaggregation ' + d + ' Ausprägung'] in list(dfT.Spezifikation):
                                 line[categories.loc[column, 'Kategorie En'].lower()] = expressions.loc[pageData.loc[DNr, 'Disaggregation ' + d + ' Ausprägung'], 'Ausprägung En'].lower()
                                 
                             if column == 'K_LAENDER' and float(year) < 2025:
@@ -169,6 +182,14 @@ for page in meta.index:
                             
                     if column == 'Value' and str(year) in pageData.columns:
                         line[column] = pageData.loc[DNr, str(year).replace('.',',')]
+                        
+                # delete rows with GeoCode if there are no values to not show those years in map
+                if 'GeoCode' in line and pd.isnull(line['Value']):
+                    line = {}
+                
+                #if page == "06.2.a,b" and pd.isnull(line['Value']):
+                    #line = {}
+                   
                 if len(line) > 0:
                     targetData.append(line)
     
