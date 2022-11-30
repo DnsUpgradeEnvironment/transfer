@@ -12,9 +12,11 @@ import os
 #get the current path and the path where to save the files
 path = os.getcwd()
 
-#toggle = 'Upgrade'
+toggle = 'Upgrade'
 #toggle = 'Prüf'
 toggle = 'Staging'
+
+imgTargetPath = path.replace('\\transfer', '\dns-data\data\\')
 
 if toggle == 'Upgrade':
     targetPath = path.replace('\\transfer', '\dns-data\data\\')
@@ -36,6 +38,7 @@ geoCodesKreis = pd.read_excel(path + '\\Dic_GeoCodes.xlsx',  index_col=2)
 
 #concat weather and indicators
 weatherWithIndicatorInfos = pd.merge(weather2, indicators, left_on="INr", right_index=True, how="left", sort=False)
+weatherWithIndicatorInfos.rename(columns={'InGrafikAnzeigen?': 'InGrafikAnzeigen'}, inplace=True)
 
 #for maps
 geoCodes = {'A_LAENDER_BW':'code08',
@@ -126,7 +129,10 @@ for page in meta.index:
             
         # we also need a row for the target year(s)
         IbNr = meta.loc[page, 'Tab_4a_Indikatorenblätter.IbNr']
-        dfT = weatherWithIndicatorInfos[(weatherWithIndicatorInfos.IbNr == IbNr)]
+        #dfT = weatherWithIndicatorInfos[(weatherWithIndicatorInfos.IbNr == IbNr)]
+        dfT = weatherWithIndicatorInfos.loc[(weatherWithIndicatorInfos.IbNr == IbNr) & (weatherWithIndicatorInfos.InGrafikAnzeigen == True)]
+        #df.loc[(df.origin == "JFK") & (df.carrier == "B6")]
+        
         for zielJahr in dfT.Zieljahr:
             if not pd.isnull(zielJahr):
                 if not str(int(zielJahr)) in yearsWithValues:
@@ -171,6 +177,9 @@ for page in meta.index:
                             
                             elif pageData.loc[DNr, 'Disaggregation ' + d + ' Ausprägung'] in list(dfT.Spezifikation):
                                 line[categories.loc[column, 'Kategorie En'].lower()] = expressions.loc[pageData.loc[DNr, 'Disaggregation ' + d + ' Ausprägung'], 'Ausprägung En'].lower()
+                             
+                            elif len(list(dfT.Spezifikation)) > 0:
+                                line = {}
                                 
                             if column == 'K_LAENDER' and float(year) < 2025:
                                 line['GeoCode'] = geoCodes[pageData.loc[DNr, 'Disaggregation ' + d + ' Ausprägung']]

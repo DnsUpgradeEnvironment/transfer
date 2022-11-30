@@ -18,7 +18,9 @@ path = os.getcwd()
 
 toggle = 'Upgrade'
 #toggle = 'Prüf'
-#toggle = 'Staging'
+toggle = 'Staging'
+
+imgTtargetPath = path.replace('\\transfer', '\dns-data\meta')
 
 if toggle == 'Upgrade':
     targetPath = path.replace('\\transfer', '\dns-data\meta')
@@ -81,8 +83,8 @@ keyDict = {'Grafiktitel': 'graph_titles: ',
            '': '',
            'value': ''}
 
-pageLinkDic = {'Staging':{'De': 'www.dns-indikatoren.de/status',
-                      'En': 'www.dns-indikatoren.de/en/status'},
+pageLinkDic = {'Staging':{'De': 'https://dns-indikatoren.de/status',
+                      'En': 'https://dns-indikatoren.de/en/status'},
                'Prüf': {'De': 'www.dnsTestEnvironment.github.io/dns-indicators/status',
                       'En': 'www.dnsTestEnvironment.github.io/dns-indicators/en/status'},
                'Upgrade': {'De': 'https://dnsUpgradeEnvironment.github.io/dns-indicators/status',
@@ -94,7 +96,7 @@ replaceDic = {'De':
                    '100.000': '100&nbsp;000',
                    '100 000': '100&nbsp;000',
                    'CO2': u'CO\u2082',
-                   'PM10': u'PM\u2081\u2080',
+                   'PM10': u'PM\u2081\u2080',   
                    'PM2,5': u'PM\u2080.\u2085',
                    'PM0,1': u'PM\u2080.\u2081',
                    'PM0.1': u'PM\u2080.\u2081',
@@ -250,12 +252,13 @@ def addLinkFct(text, lang):
     indList.remove(page)
     for i in indList:
         repl = i.lstrip('0').replace(',',', ')
-        if ('1' + repl + ' ' in text or '1' + repl + ')' in text) and not page == '1' + i.lstrip('0') :
-            text = text.replace('1' + repl, '<a href="' + pageLinkDic[toggle][lang].replace('status','') + getFilename('1'+repl) + '">' + '1' + repl + '</a>')
-            indList.remove('1'+i.lstrip('0'))
-        elif repl + '&nbsp;' in text or repl + ' ' in text or repl + ')' in text:
-            text = text.replace(repl, '<a href="' + pageLinkDic[toggle][lang].replace('status','') + getFilename(i) + '">' + repl + '</a>')
-            
+        if '1' + repl != page:
+            if ('1' + repl + ' ' in text or '1' + repl + ')' in text) and not page == '1' + i.lstrip('0') :
+                text = text.replace('1' + repl, '<a href="' + pageLinkDic[toggle][lang].replace('status','') + getFilename('1'+repl) + '">' + '1' + repl + '</a>')
+                indList.remove('1'+i.lstrip('0'))
+            elif repl + '&nbsp;' in text or repl + ' ' in text or repl + ')' in text:
+                text = text.replace(repl, '<a href="' + pageLinkDic[toggle][lang].replace('status','') + getFilename(i) + '">' + repl + '</a>')
+                
     for i in singleIndList:
         text = text.replace(' ' + i, ' ' + singleIndList[i])
     return text
@@ -1183,6 +1186,7 @@ for abb in abbreviations.index:
                             ['nbsp;','.'],
                             ['nbsp;',','],
                             ['nbsp;','-'],
+                            ['-','-'],
                             ['nbsp;',')'],
                             [' ','&nbsp;'],
                             ['(',')'],
@@ -1197,6 +1201,7 @@ for abb in abbreviations.index:
                             [' ','+'],
                             [' ',','],
                             ['(',' '],
+                            ['(',':'],
                             [' ',')'],
                             ['(','-'],
                             [' ',"'"],
