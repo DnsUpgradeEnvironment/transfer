@@ -12,15 +12,17 @@ import os
 #get the current path and the path where to save the files
 path = os.getcwd()
 
-toggle = 'Upgrade'
-#toggle = 'Prüf'
-toggle = 'Staging'
+#toggle = 'Upgrade'
+toggle = 'Prüf'
+#toggle = 'Staging'
 
 imgTargetPath = path.replace('\\transfer', '\dns-data\data\\')
 
 if toggle == 'Upgrade':
     targetPath = path.replace('\\transfer', '\dns-data\data\\')
-else:   
+elif toggle == 'Prüf':
+    targetPath = path.replace('\\Documents\\MoBosse\\DnsUpgradeEnvironment\\transfer','\\Documents\\DNS\\DnsTestEnvironment\\dns-data\\data\\')
+else:
     targetPath = path.replace('\\Documents\\MoBosse\\DnsUpgradeEnvironment\\transfer','\\Documents\\DNS\\Plattform\\open-sdg-data-starter\\data\\')
 
 
@@ -162,9 +164,9 @@ for page in meta.index:
                             try:
                                 line[column] = expressions.loc[pageData.loc[DNr, 'Disaggregation 1 Ausprägung'], 'Ausprägung En'].lower()
                             except KeyError:
-                                line[column] = indicators.loc[pageData.loc[DNr, 'INr'], 'Bezeichnung für Plattform En'].lower()
-                        elif not pd.isnull(indicators.loc[pageData.loc[DNr, 'INr'], 'Bezeichnung für Plattform En']):
-                            line[column] = indicators.loc[pageData.loc[DNr, 'INr'], 'Bezeichnung für Plattform En'].lower()
+                                line[column] = indicators.loc[pageData.loc[DNr, 'INr'], 'Indikator in Auswahlfeld En'].lower()
+                        elif not pd.isnull(indicators.loc[pageData.loc[DNr, 'INr'], 'Indikator in Auswahlfeld En']):
+                            line[column] = indicators.loc[pageData.loc[DNr, 'INr'], 'Indikator in Auswahlfeld En'].lower()
                     for d in ['1', '2', '3']:
                         if column == pageData.loc[DNr, 'Disaggregation ' + d + ' Kategorie']:
                             if column == 'K_SERIES':
