@@ -18,7 +18,7 @@ path = os.getcwd()
 
 #toggle = 'Upgrade'
 toggle = 'Prüf'
-toggle = 'Staging'
+#toggle = 'Staging'
 
 imgTtargetPath = path.replace('\\transfer', '\dns-data\meta')
 
@@ -66,7 +66,7 @@ dicFootnoteLabels = {'Sing De':'Anmerkung',
                'Plur En': 'Notes'}
 
 contentText = {'De': 'Text aus dem <a href="https://dns-indikatoren.de/facts_publications/">Indikatorenbericht 2022 </a>',
-               'En': 'Text from the <a href="https://dns-indikatoren.de/en/facts_publications/">Indicator Report 2021 </a>'}
+               'En': 'Text from the <a href="https://dns-indikatoren.de/en/facts_publications/">Indicator Report 2022 </a>'}
 
 keyDict = {'Grafiktitel': 'graph_titles: ',
            'Untertitel': 'graph_subtitles: ',
@@ -121,10 +121,12 @@ replaceDic = {'De':
                    '100 000': '100&nbsp;000',
                    'CO2': u'CO\u2082',
                    'PM0.1': u'PM\u2080.\u2081',
+                   'PM0,1': u'PM\u2080,\u2081',
                    'PM10': u'PM\u2081\u2080',
                    'PM2,5': u'PM\u2082.\u2085',
                    'PM2.5': u'PM\u2082.\u2085',
                    'PM₅﮳₂': u'PM\u2082.\u2085',
+                   '\n':'<br>',
                    'm3': u'm\u00B3',
                    'm2': u'm\u00B2',
                    'SO2': u'SO\u2082',
@@ -141,7 +143,10 @@ replaceDicTextOnly = {'De':
                    '+ ': '+&nbsp;',
                    '‒ ': '‒&nbsp;'},
               'En':
-                  {}}
+                  {' -':' &#8209;',
+                   '+ ': '+&nbsp;',
+                   '– ': '‒&nbsp;'
+                   }}
 
 sdgColors =    [['e5243b', '891523', 'ef7b89', '2d070b', 'f4a7b0', 'b71c2f', 'ea4f62', '5b0e17', 'fce9eb'],
                 ['dda63a', '896d1f', 'efd385', '2d240a', 'f4e2ae', 'b7922a', 'eac55d', '5b4915', 'f9f0d6'],
@@ -332,11 +337,12 @@ def getFootnotes(index, lang):
         if not pd.isnull(footnote):
             footnote = footnote.replace('\n','<br>')
             if '<br>' in footnote:
-                return 'data_footnotes: ' + txtFct('false', 'true', footnote.replace('<br>', '<br>• '), lang)
+                return 'data_footnotes: ' + txtFct('false', 'true', footnote.replace('<br>', '<br>• '), lang).replace('• - ', ' - ')
             else:
                 return 'data_footnote: ' + txtFct('false', 'true', footnote, lang)
         else:
-            return re       
+            re = re
+            return re   
     else:
         re += 'footer_fields:'
         for i in range(1,3):
@@ -357,6 +363,7 @@ def getFootnotes(index, lang):
                         list(set(data[data.IbNr == meta.loc[index, 'Tab_4a_Indikatorenblätter.IbNr']].Einheit))
                     elif spec[0:2] == 'A_':
                         re += '\n  - series: ' + expressions.loc[spec, 'Ausprägung En'].lower() + '\n    '
+                        possSpec = []
                     elif spec[0] == 'Z':
                         re += '\n  - series: ' + indicators.loc[spec, 'Indikator in Auswahlfeld En'].lower() + '\n    '
                         possSpec = list(set(data[data.IbNr == meta.loc[index, 'Tab_4a_Indikatorenblätter.IbNr']].INr))
@@ -371,7 +378,7 @@ def getFootnotes(index, lang):
             for spec in list(set(possSpec) - set(specList)):
                 re += '\n  - series: ' + indicators.loc[spec, 'Indikator in Auswahlfeld En'].lower()
                 re += '\n    label: ' + txtFct('false', 'true', dicFootnoteLabels[case + lang], lang)
-                re += '\n    value: ' + txtFct('false', 'true', footnote.replace('<br>', '<br>• '), lang) 
+                re += '\n    value: ' + txtFct('false', 'true', footnote.replace('<br>', '<br>• '), lang)   
     return re
 
 
@@ -428,8 +435,8 @@ def getTitle(case, content, lang):
     return titleDic[case][lang]['pre'] + content + titleDic[case][lang]['post']
 
 def getSomething(key, value):
-    if not pd.isnull(value):
-        return '\n\n' + key + ': '+ value
+    if not pd.isnull(value) and value:
+        return '\n\n' + key + ': ' + str(value)
     else:
         return ''
  
@@ -597,12 +604,15 @@ def getWeatherFct(index, lang):
     
     #determine years
     yearsOnYAxis = []
+    specialYears = 0
     for y in data[data.IbNr == IbNr].dropna(axis='columns', how='all').columns:
         try: 
             if float(y.replace(',','.')):
                 if not meta.loc[index, y]:
                     yearsOnYAxis.append(y)
         except ValueError:
+            if 'AltLabel' in y:
+                specialYears += 1
             continue 
     #add empty years
     if len(yearsOnYAxis) > 3:
@@ -655,7 +665,7 @@ def getWeatherFct(index, lang):
                 targetCounter = 0
                 for target in dfI.index:
                     if not pd.isnull(dfI.loc[target, 'Zieljahr']):
-                        targetYear = yearsOnYAxis.index(str(int(dfI.loc[target, 'Zieljahr'])))
+                        targetYear = yearsOnYAxis.index(str(int(dfI.loc[target, 'Zieljahr']))) + specialYears
                         
                     #first lets find the series for which the target is for
                     seriesKey = INr
@@ -735,15 +745,21 @@ def getWeatherFct(index, lang):
                         #check if there are targets of two indicators in same chart
                         if (len(df['INr'].unique()) > 1 or ('K_SERIES' in list(data[data.INr == INr].xs('Disaggregation 1 Kategorie', axis=1)) and not np.nan in list(data[data.INr == INr].xs('Disaggregation 1 Kategorie', axis=1)))) and not meta.loc[index, 'Umschalten zwischen Zeitreihen?']:
                             color = sdgColors[meta.loc[index, 'Ziel']-1][int(INr[-1])] #- int(INr[-1]) - 6]
+                            backgroundColor = 'transparent'
                         elif graphType == 'bar' and dfI.loc[target,'Zieltyp'] == 'J':
-                            color = '423d3d'
+                            if int(index[:2]) in [8, 13, 16, 17]:
+                                color = 'cbc8c8'
+                                backgroundColor = '"#' + color + '"'
+                            else:
+                                color = '423d3d'
+                                backgroundColor = 'transparent'
                         else:
                             color = sdgColors[meta.loc[index, 'Ziel']-1][0]
-                            
+                            backgroundColor = 'transparent'
                         if graphType == 'bar' and dfI.loc[target,'Zieltyp'] != 'J':
                             reTp += 'type: box'
-                            reTp += '\n    xMin: ' + str(targetYear - (0.3 + len(yearsOnYAxis) * 0.0015))
-                            reTp += '\n    xMax: ' + str(targetYear + (0.3 + len(yearsOnYAxis) * 0.0015))
+                            reTp += '\n    xMin: ' + str(targetYear - (0.3 + (len(yearsOnYAxis) + specialYears) * 0.0015))
+                            reTp += '\n    xMax: ' + str(targetYear + (0.3 + (len(yearsOnYAxis) + specialYears) * 0.0015))
                             reTL += 'type: label'
                             if 'LabelPositionX' in dfI.columns:
                                 if not pd.isnull(dfI.loc[target, 'LabelPositionX']):
@@ -801,7 +817,7 @@ def getWeatherFct(index, lang):
                         else:
                             reTp += '\n    borderColor: "#' + color + '"'
                         reTp += '\n    preset: target_points'
-                        reTL += '\n    backgroundColor: transparent'
+                        reTL += '\n    backgroundColor: ' + backgroundColor
                         
                         if 'Label' + lang in dfI.columns:
                             if not pd.isnull(dfI.loc[target, 'Label'+lang]):
@@ -1053,6 +1069,7 @@ for page in meta.index:                                                         
     " + getStackedDisagg(page) + "\
     " + getSomething('x_axis_label', meta.loc[page,'x-Achsenbezeichnung De']) + "\
     " + getSomething('national_geographical_coverage', meta.loc[page,'Geografische Abdeckung De']) + "\
+    " + getSomething('special_evaluation', meta.loc[page,'Sonderauswertung?']) + "\
     \n---\n\n" + getWeatherFct(page, 'De')[3])
 
     fileEn.write("---\n\nlanguage: en\

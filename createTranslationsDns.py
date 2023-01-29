@@ -15,7 +15,7 @@ import os
 path = os.getcwd()
 
 toggle = 'Prüf'
-toggle = 'Staging'
+#toggle = 'Staging'
 
 if toggle == 'Staging':
     targetPath = path.replace('\\transfer', '\sdg-translations')
@@ -53,10 +53,14 @@ dic = {'a': {'title De': 'Ausprägungen',
              'title En': 'Units',
              'df': units,
              'key': 'Einheit'},
-       'd': {'title De': 'Indikatoren',
-             'title En': 'Indicators',
+       'd': {'title De': 'Indikatoren für Auswahlfelder',
+             'title En': 'Indicators for selection filelds',
              'df': indicators,
-             'key': 'Indikator in Auswahlfeld'}}
+             'key': 'Indikator in Auswahlfeld'},
+       'e': {'title De': 'Indikatoren für Statusübersicht',
+             'title En': 'Indicators for status overview',
+             'df': indicators,
+             'key': 'Indikator'}}
 
 additions = {'a':{'key':['total','Year'],
                   'De':['Insgesamt','Jahr'],
@@ -68,6 +72,9 @@ additions = {'a':{'key':['total','Year'],
                   'De':[],
                   'En':[]},
              'd':{'key':[],
+                  'De':[],
+                  'En':[]},
+             'e':{'key':[],
                   'De':[],
                   'En':[]}}
 
