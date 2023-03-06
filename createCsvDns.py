@@ -14,7 +14,7 @@ path = os.getcwd()
 
 #toggle = 'Upgrade'
 toggle = 'Prüf'
-#toggle = 'Staging'
+toggle = 'Staging'
 
 imgTargetPath = path.replace('\\transfer', '\dns-data\data\\')
 

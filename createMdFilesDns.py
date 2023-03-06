@@ -197,13 +197,21 @@ def getWeatherTitel(year, asOfData, typus, ws, lang):
 weatherTitleDic= {'current':
                   {'K':
                       {'S':{'De': 'Bei Fortsetzung der Entwicklung würde der Zielwert erreicht oder um weniger als 5&nbsp;% der Differenz zwischen Zielwert und aktuellem Wert verfehlt.',
-                               'En': 'If the trend continues, the target value would be reached or missed by less than 5% of the difference between the target value and the current value.'},
+                               'En': 'If the trend continues, the target value would be reached or missed by less than 5&nbsp;% of the difference between the target value and the current value.'},
                       'L':{'De': 'Bei Fortsetzung der Entwicklung würde das Ziel voraussichtlich um mindestens 5&nbsp;%, aber maximal um 20&nbsp;% der Differenz zwischen Zielwert und aktuellem Wert verfehlt.',
-                               'En': 'If the development continues, the target would probably be missed by at least 5%, but by a maximum of 20% of the difference between the target value and the current value.'},
+                               'En': 'If the development continues, the target would probably be missed by at least 5&nbsp;%, but by a maximum of 20&nbsp;% of the difference between the target value and the current value.'},
                       'W':{'De': 'Der Indikator entwickelt sich zwar in die gewünschte Richtung auf das Ziel zu, bei Fortsetzung der Entwicklung würde das Ziel im Zieljahr aber um mehr als 20&nbsp;% der Differenz zwischen Zielwert und aktuellem Wert verfehlt.',
-                               'En': 'Although the indicator is moving in the desired direction toward the target, if the trend were to continue, the target would be missed in the target year by more than 20% of the difference between the target value and the current value.'},
+                               'En': 'Although the indicator is moving in the desired direction toward the target, if the trend were to continue, the target would be missed in the target year by more than 20&nbsp;% of the difference between the target value and the current value.'},
                       'B':{'De': 'Der Abstand zum Ziel ist konstant hoch oder vergrößert sich. Der Indikator entwickelt sich also nicht in die gewünschte Richtung.',
-                               'En': 'The distance to the target is constantly high or increases. Thus, the indicator does not develop in the desired direction.'}},
+                               'En': 'The distance to the target is constantly high or increases. Thus, the indicator does not develop in the desired direction.'},
+                      'A':{'De': 'Die Bewertung ist aufgrund mangelnder Vergleichbarkeit mit den Vorjahren nicht möglich.',
+                               'En': 'Evaluation due to limited comparability not possible.'},
+                      'X':{'De': '',
+                               'En': ''},
+                      'K':{'De': 'Keine Bewertung möglich.',
+                           'En': 'No assessment possible.'},
+                      'E':{'De': 'Bewertung endet.',
+                           'En': 'Assessment ended.'}},
                     'J':
                           {'S':{'De': 'Der Zielwert oder ein besserer Wert wurde im letzten Jahr erreicht und die durchschnittliche Veränderung deutet nicht in Richtung einer Verschlechterung.',
                                    'En': 'The target value or a better value was achieved in the last year and the average change does not point in the direction of deterioration.'},
@@ -212,7 +220,17 @@ weatherTitleDic= {'current':
                           'W':{'De': 'Der Zielwert wurde nicht erreicht, aber die durchschnittliche Entwicklung weist in die gewünschte Richtung.',
                                    'En': 'The target value was not reached, but the average development points in the desired direction.'},
                           'B':{'De': 'Der Zielwert wurde verfehlt und der Indikator hat sich im Durchschnitt der letzten Veränderungen nicht in Richtung des Ziels bewegt.',
-                                   'En': 'The target value was missed and the indicator has not moved towards the target on average over the last changes.'}},
+                                   'En': 'The target value was missed and the indicator has not moved towards the target on average over the last changes.'},
+                          'A':{'De': 'Die Bewertung ist aufgrund mangelnder Vergleichbarkeit mit den Vorjahren nicht möglich.',
+                               'En': 'Evaluation due to limited comparability not possible.'},
+                          'X':{'De': '',
+                               'En': ''},
+                          'Sp':{'De': 'Die Bewertung fällt später an.',
+                                'En': 'The assessment will be carried out later.'},
+                          'K':{'De': 'Keine Bewertung möglich.',
+                               'En': 'No assessment possible.'},
+                          'E':{'De': 'Bewertung endet.',
+                           'En': 'Assessment ended.'}},
                     'R':
                           {'S':{'De': 'Sowohl der Durchschnittswert als auch die letzte jährliche Veränderung deuten in die richtige Richtung.',
                                    'En': 'Both the average value and the last annual change point in the right direction.'},
@@ -221,17 +239,37 @@ weatherTitleDic= {'current':
                           'W':{'De': 'Der Durchschnittswert zielt in die falsche Richtung oder zeigt eine Stagnation an, im letzten Jahr zeigte sich jedoch eine Wende in die gewünschte Richtung.',
                                    'En': 'The average value aims in the wrong direction or indicates stagnation, but last year showed a turn in the desired direction.'},
                           'B':{'De': 'Weder Durchschnittswert noch die letzte Veränderung deuten in die richtige Richtung.',
-                                   'En': 'Neither the average value nor the last change points in the right direction.'}}},
+                                   'En': 'Neither the average value nor the last change points in the right direction.'},
+                          'A':{'De': 'Die Bewertung ist aufgrund mangelnder Vergleichbarkeit mit den Vorjahren nicht möglich.',
+                               'En': 'Evaluation due to limited comparability not possible.'},
+                          'X':{'De': '',
+                               'En': ''},
+                          'Sp':{'De': 'Die Bewertung fällt später an.',
+                                'En': 'The assessment will be carried out later.'},
+                          'K':{'De': 'Keine Bewertung möglich.',
+                               'En': 'No assessment possible.'},
+                          'E':{'De': 'Bewertung endet.',
+                           'En': 'Assessment ended.'}}},
                   'former':
                     {'K':
                       {'S':{'De': 'Bei Fortsetzung der Entwicklung aus XXX wäre der Zielwert erreicht oder um weniger als 5&nbsp;% der Differenz zwischen Zielwert und dem Wert aus XXX verfehlt worden.',
                                'En': 'If the trend from XXX had continued, the target value would have been reached or missed by less than 5% of the difference between the target value and the value at that time.'},
                       'L':{'De': 'Bei Fortsetzung der Entwicklung von XXX wäre das Ziel um mindestens 5&nbsp;%, aber maximal um 20&nbsp;% der Differenz zwischen Zielwert und dem Wert aus XXX verfehlt worden.',
-                               'En': 'If the development from XXX had continued, the target had been missed by at least 5%, but by a maximum of 20% of the difference between the target value and the value at that time.'},
+                               'En': 'If the development from XXX had continued, the target had been missed by at least 5&nbsp;documentat%, but by a maximum of 20&nbsp;% of the difference between the target value and the value at that time.'},
                       'W':{'De': 'Der Indikator entwickelte sich in XXX zwar in die gewünschte Richtung auf das Ziel zu, bei Fortsetzung der Entwicklung wäre das Ziel im Zieljahr aber um mehr als 20 % der Differenz zwischen Zielwert und dem Wert aus XXX verfehlt worden.',
                                'En': 'Although the indicator has in XXX been moving in the desired direction toward the target, if the trend had to continued, the target would have been missed in the target year by more than 20% of the difference between the target value and the value at that time.'},
                       'B':{'De': 'Der Abstand zum Ziel war in XXX konstant hoch oder hat sich vergrößert. Der Indikator entwickelte sich also nicht in die gewünschte Richtung.',
-                               'En': 'In XXX the distance to the target was constantly high or had increased. Thus, the indicator did not develop in the desired direction.'}},
+                               'En': 'In XXX the distance to the target was constantly high or had increased. Thus, the indicator did not develop in the desired direction.'},
+                      'A':{'De': 'Die Bewertung ist aufgrund mangelnder Vergleichbarkeit mit den Vorjahren nicht möglich.',
+                               'En': 'Evaluation due to limited comparability not possible.'},
+                      'X':{'De': '',
+                               'En': ''},
+                      'Sp':{'De': 'Die Bewertung fällt später an.',
+                            'En': 'The assessment will be carried out later.'},
+                      'K':{'De': 'Keine Bewertung möglich.',
+                           'En': 'No assessment possible.'},
+                      'E':{'De': 'Bewertung endet.',
+                           'En': 'Assessment ended.'}},
                     'J':
                           {'S':{'De': 'Der Zielwert oder ein besserer Wert wurde in XXX erreicht und die durchschnittliche Veränderung deutete nicht in Richtung einer Verschlechterung.',
                                    'En': 'In XXX the target value or a better value was achieved and the average change did not point in the direction of deterioration.'},
@@ -240,7 +278,17 @@ weatherTitleDic= {'current':
                           'W':{'De': 'Der Zielwert wurde in XXX nicht erreicht, aber die durchschnittliche Entwicklung wies in die gewünschte Richtung.',
                                    'En': 'In XXX the target value was not reached, but the average development pointed in the desired direction.'},
                           'B':{'De': 'Der Zielwert wurde in XXX verfehlt und der Indikator hat sich im Durchschnitt der vorangegangenen Veränderungen nicht in Richtung des Ziels bewegt.',
-                                   'En': 'In XXX the target value was missed and the indicator had not moved towards the target on average over the previous changes.'}},
+                                   'En': 'In XXX the target value was missed and the indicator had not moved towards the target on average over the previous changes.'},
+                          'A':{'De': 'Die Bewertung ist aufgrund mangelnder Vergleichbarkeit mit den Vorjahren nicht möglich.',
+                               'En': 'Evaluation due to limited comparability not possible.'},
+                          'X':{'De': '',
+                               'En': ''},
+                          'Sp':{'De': 'Die Bewertung fällt später an.',
+                               'En': 'The assessment will be carried out later.'},
+                          'K':{'De': 'Keine Bewertung möglich.',
+                               'En': 'No assessment possible.'},
+                          'E':{'De': 'Bewertung endet.',
+                           'En': 'Assessment ended.'}},
                     'R':
                           {'S':{'De': 'Sowohl der Durchschnittswert als auch die vorangegangene jährliche Veränderung deuteten in XXX in die richtige Richtung.',
                                    'En': 'In XXX both the average value and the previous annual change pointed in the right direction.'},
@@ -249,7 +297,17 @@ weatherTitleDic= {'current':
                           'W':{'De': 'Der Durchschnittswert zielte in XXX in die falsche Richtung oder zeigt eine Stagnation an, im vorangegangenen Jahr zeigte sich jedoch eine Wende in die gewünschte Richtung.',
                                    'En': 'In XXX the average value aimed in the wrong direction or indicates stagnation, but the previous year had shown a turn in the desired direction.'},
                           'B':{'De': 'Weder Durchschnittswert noch die vorherige Veränderung deuten in XXX in die richtige Richtung.',
-                                   'En': 'In XXX neither the average value nor the last change pointed in the right direction.'}}}}
+                                   'En': 'In XXX neither the average value nor the last change pointed in the right direction.'},
+                          'A':{'De': 'Die Bewertung ist aufgrund mangelnder Vergleichbarkeit mit den Vorjahren nicht möglich.',
+                               'En': 'Evaluation due to limited comparability not possible.'},
+                          'X':{'De': '',
+                               'En': ''},
+                          'Sp':{'De': 'Die Bewertung fällt später an.',
+                               'En': 'The assessment will be carried out later.'},
+                          'K':{'De': 'Keine Bewertung möglich.',
+                               'En': 'No assessment possible.'},
+                          'E':{'De': 'Bewertung endet.',
+                           'En': 'Assessment ended.'}}}}
 
     
 transl = {'De': 'Ziel', 'En': 'Target', 'DeEveryYear': 'Jährliches Ziel', 'EnEveryYear': 'Constant target'}
@@ -308,20 +366,28 @@ singleIndList = {'1.1.a': '<a href="' + pageLinkDic[toggle]['De'].replace('statu
 # Since the texts are too long to export from access database without beeing cut off, the export is done in too parts.
 # The first part contains a certain number of characters beginning at the start the second one conains a certain number of characters counted from the end of the text.
 # As a result there is a part of the text that is contained in both, the first and the second part. 
-def getContentFct (index, lang):
-    firstPart = meta.loc[page, 'Inhalt' + lang + '1']
-    secondPart = meta.loc[page, 'Inhalt' + lang + '2']
+def getContentFct(index, lang):
+    firstPart = meta.loc[index, 'Inhalt' + lang + '1']
+    secondPart = meta.loc[index, 'Inhalt' + lang + '2']
     if firstPart[-100:] == secondPart[-100:]:
         return firstPart
     else:
-        matchingPart = ''
-        for i in range(len(secondPart)):
+        matchingPart = secondPart[:10]
+        for i in range(10,len(secondPart)):
             if firstPart[-i:] != secondPart [:i]:
                 matchingPart += secondPart[i]
             else:
                 break
         return firstPart.replace(matchingPart, secondPart)
     
+def getEmbedd(index, lang):
+    re = ''
+    if meta.loc[index, 'ZusätzlicheInfos?']:
+        filename = index.lstrip('0').replace('.','_').replace(',','')
+        re += '\n\nembedded_feature_html: <iframe width="100%" height="1200" src="' + pageLinkDic[toggle][lang].replace('www.','https://').replace('/status','/public/AddInfos/') + lang.lower() + '/' + filename + '.pdf" frameborder="0" allowFullScreen="true"></iframe>\n'
+        re += '\nembedded_feature_tab_title: Weitere Informationen'
+    return re
+
 # This function returns the filename in the following shape: 7-2-ab
 def getFilename(index):
     filename = index.lstrip('0').replace('.','-').replace(',','')
@@ -335,7 +401,7 @@ def getFootnotes(index, lang):
     
     if pd.isnull(meta.loc[index, 'Fußnote 1 De']): # if there are no additional specified footnotes
         if not pd.isnull(footnote):
-            footnote = footnote.replace('\n','<br>')
+            footnote = footnote.replace('\n','XXX').replace('\n','<br>').replace('XXX','\n')
             if '<br>' in footnote:
                 return 'data_footnotes: ' + txtFct('false', 'true', footnote.replace('<br>', '<br>• '), lang).replace('• - ', ' - ')
             else:
@@ -606,6 +672,8 @@ def getWeatherFct(index, lang):
     yearsOnYAxis = []
     specialYears = 0
     for y in data[data.IbNr == IbNr].dropna(axis='columns', how='all').columns:
+        if 'AltLabel' in y:
+            y = data[data.IbNr == IbNr].dropna(axis='columns', how='all').iloc[0][y][:4]
         try: 
             if float(y.replace(',','.')):
                 if not meta.loc[index, y]:
@@ -627,7 +695,7 @@ def getWeatherFct(index, lang):
 
     if len(df) > 0:
         for INr in df['INr'].unique():
-            years = [str(x) for x in range(2010, 2026)]
+            years = [str(x) for x in range(1999, 2026)]
             dfI = df[df.INr == INr].dropna(axis='columns', how='all') #df with one indicator only and no columns with nan only
             if len(dfI) > 0:
                 #readd some columns
@@ -642,7 +710,6 @@ def getWeatherFct(index, lang):
                 re += '\nweather_indicator_' + str(counter) + ': ' + indicators.loc[INr, 'Indikator'] + ' ' + txtFct('false', 'false', indicators.loc[INr, 'Indikator ' + lang], lang)
                 
                 # Years
-                years = [str(x) for x in range(2010, 2026)]
                 yearCounter = 0
                 for year in list(reversed(years)):
                     if year in dfI.columns: 
@@ -749,7 +816,7 @@ def getWeatherFct(index, lang):
                         elif graphType == 'bar' and dfI.loc[target,'Zieltyp'] == 'J':
                             if int(index[:2]) in [8, 13, 16, 17]:
                                 color = 'cbc8c8'
-                                backgroundColor = '"#' + color + '"'
+                                backgroundColor = 'rgba(203, 200, 200, 0.7)\n    borderRadius: 5'
                             else:
                                 color = '423d3d'
                                 backgroundColor = 'transparent'
@@ -868,9 +935,10 @@ def getWeatherFct(index, lang):
                         weather, targetType, targetYearH= '', '', ''
                         for year in yearsOnYAxis:
                             if year in dfI.columns and not pd.isnull(dfI.loc[target, year]):
-                                weather = weatherLong[dfI.loc[target, year]]
-                                targetType = dfI.loc[target, 'Zieltyp']
-                                targetYearH = year
+                                if not dfI.loc[target, year] in ['X','Sp','K']:
+                                    weather = weatherLong[dfI.loc[target, year]]
+                                    targetType = dfI.loc[target, 'Zieltyp']
+                                    targetYearH = year
                         if not targetYearH in targetYearsH:
                             targetYearsH.append(targetYearH)
                         if weather != '':
@@ -908,7 +976,7 @@ def getWeatherFct(index, lang):
         re3 = '\ngraph_annotations:' + re3
     return re, reTp, re3, reHeader
 
-weatherLong = {'S': 'Sonne', 'W': 'Wolke','L':'Leicht bewölkt','B': 'Blitz'}
+weatherLong = {'S': 'Sonne', 'W': 'Wolke','L':'Leicht bewölkt','B': 'Blitz', 'A': 'Bewertung ausgesetzt', 'X': '', 'Sp': 'Später', 'K': 'Keine', 'E': 'Ende'}
 headerNoteDic = {0:{'De':'(Keine Bewertung möglich)','En':'(No evaluation possible)'},
                  1:{'De':'(Bewertung aus dem Indikatorenbericht 2022, bezogen auf das Berichtsjahr XXX)','En':'(Evaluation of the indicator report 2022 relating to the reporting year XXX)'},
                  2:{'De':'(Bewertungen aus dem Indikatorenbericht 2022, bezogen auf das Berichtsjahr XXX)','En':'(Evaluations of the indicator report 2022 relating to the reporting year XXX)'},
@@ -1047,6 +1115,7 @@ for page in meta.index:                                                         
     \nnext: " + getFilename(getPreviousIndex(page, 'next')) + "\
     \n\n#content \
     \ncontent_and_progress: " + addLinkFct(txtFct('true', 'true', "<b>" + contentText['De'] + "</b><br>" + getContentFct(page, 'De'), 'De'), 'De').replace('<br>','<br><br>') + "\
+    " + getEmbedd(page, 'De') +"\
     \n\n#Sources\
     \n" + getSourcesFct(page, 'De') + "\
     \n\n#Status\
@@ -1054,7 +1123,7 @@ for page in meta.index:                                                         
     \n" + getWeatherFct(page, 'De')[1] + "\
     \n\ndata_show_map: " + str(meta.loc[page, 'Karte anzeigen?']).lower() + "\
     \ncopyright: '&copy; Statistisches Bundesamt (Destatis), " + year + "'\
-    \n\n" + getFootnotes(page, 'De') + "\
+    \n\n" + getFootnotes(page, 'De').replace('<br>  - ', '<br>&nbsp;&nbsp;- ') + "\
     \n\n" + getSpecifiedStuff(page,'Grafiktitel', 5, 'title', '', ' De') + "\
     \n\n" + getSpecifiedStuff(page,'Untertitel', 5, 'title', '', ' De') + "\
     \n\n" + getWeatherFct(page, 'De')[2] + "\
@@ -1085,7 +1154,7 @@ for page in meta.index:                                                         
     \n\n#Sources\
     \n" + getSourcesFct(page, 'En') + "\
     \ncopyright: '&copy; Federal Statistical Office (Destatis), " + year + "'\
-    \n\n" + getFootnotes(page, 'En') + "\
+    \n\n" + getFootnotes(page, 'En').replace('<br>  - ', '<br>&nbsp;&nbsp;- ') + "\
     \n\n" + getSpecifiedStuff(page,'Grafiktitel', 5, 'title', '', ' En') + "\
     \n\n" + getSpecifiedStuff(page,'Untertitel', 5, 'title', '', ' En') + "\
     \n\n" + getWeatherFct(page, 'En')[2] + "\
