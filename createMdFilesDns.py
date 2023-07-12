@@ -18,7 +18,7 @@ path = os.getcwd()
 
 #toggle = 'Upgrade'
 toggle = 'Prüf'
-#toggle = 'Staging'
+toggle = 'Staging'
 
 imgTtargetPath = path.replace('\\transfer', '\dns-data\meta')
 
@@ -57,16 +57,16 @@ year = date.strftime("%Y")
 
 # ----- Variables -----------
 
-dataState = {'De': 'Der Indikatorenbericht 2022 hat den Datenstand 31.10.2022. Die Daten auf dieser Plattform werden regelmäßig aktualisiert, sodass online aktuellere Daten verfügbar sein können als im <a href="https://dns-indikatoren.de/facts_publications/">Indikatorenbericht 2022</a> veröffentlicht.',
-             'En': 'The data published in the indicator report 2022 is as of Oct 31 2022. The data shown on this platform is updated regularly, so that more current data may be available online than published in the <a href="https://dns-indikatoren.de/en/facts_publications/">indicator report 2022</a>.'}
+dataState = {'De': 'Der Indikatorenbericht 2022 hat den Datenstand 31.10.2022. Die Daten auf dieser Plattform werden regelmäßig aktualisiert, sodass online aktuellere Daten verfügbar sein können als im <a href="https://dns-indikatoren.de/publications_reports/">Indikatorenbericht 2022</a> veröffentlicht.',
+             'En': 'The data published in the indicator report 2022 is as of 31 October 2022. The data shown on this platform is updated regularly, so that more current data may be available online than published in the <a href="https://dns-indikatoren.de/en/publications_reports/">indicator report 2022</a>.'}
 
 dicFootnoteLabels = {'Sing De':'Anmerkung',
                'Plur De': 'Anmerkungen',
                'Sing En':'Note',
                'Plur En': 'Notes'}
 
-contentText = {'De': 'Text aus dem <a href="https://dns-indikatoren.de/facts_publications/">Indikatorenbericht 2022 </a>',
-               'En': 'Text from the <a href="https://dns-indikatoren.de/en/facts_publications/">Indicator Report 2022 </a>'}
+contentText = {'De': 'Text aus dem <a href="https://dns-indikatoren.de/publications_reports/">Indikatorenbericht 2022 </a>',
+               'En': 'Text from the <a href="https://dns-indikatoren.de/en/publications_reports/">Indicator Report 2022 </a>'}
 
 keyDict = {'Grafiktitel': 'graph_titles: ',
            'Untertitel': 'graph_subtitles: ',
@@ -86,8 +86,8 @@ keyDict = {'Grafiktitel': 'graph_titles: ',
 
 pageLinkDic = {'Staging':{'De': 'https://dns-indikatoren.de/status',
                       'En': 'https://dns-indikatoren.de/en/status'},
-               'Prüf': {'De': 'www.dnsTestEnvironment.github.io/dns-indicators/status',
-                      'En': 'www.dnsTestEnvironment.github.io/dns-indicators/en/status'},
+               'Prüf': {'De': 'https://dnsTestEnvironment.github.io/dns-indicators/status',
+                      'En': 'https://dnsTestEnvironment.github.io/dns-indicators/en/status'},
                'Upgrade': {'De': 'https://dnsUpgradeEnvironment.github.io/dns-indicators/status',
                       'En': 'https://dnsUpgradeEnvironment.github.io/dns-indicators/en/status'}}     
               
@@ -384,8 +384,20 @@ def getEmbedd(index, lang):
     re = ''
     if meta.loc[index, 'ZusätzlicheInfos?']:
         filename = index.lstrip('0').replace('.','_').replace(',','')
-        re += '\n\nembedded_feature_html: <iframe width="100%" height="1200" src="' + pageLinkDic[toggle][lang].replace('www.','https://').replace('/status','/public/AddInfos/') + lang.lower() + '/' + filename + '.pdf" frameborder="0" allowFullScreen="true"></iframe>\n'
-        re += '\nembedded_feature_tab_title: Weitere Informationen'
+        #re += '\n\nembedded_feature_html: <iframe width="100%" height="1200" src="' + pageLinkDic[toggle][lang].replace('www.','https://').replace('/status','/public/AddInfos/') + lang.lower() + '/' + filename + '.pdf" frameborder="0" allowFullScreen="true"></iframe>\n'
+        if lang == 'De':
+            re += '\n\nembedded_feature_html: ' + "'" +'<p>Zusätzliche Datenreihen zum Indikator finden Sie '
+            re += '<a href="' + pageLinkDic[toggle][lang].replace('www.','https://').replace('/status','/public/AddInfos/') + lang.lower() + '/' + filename + '.pdf" target="_blank" >hier</a>.</p>'
+            re += '<br><small>Hinweis: PDF-Dokumente können Sie sich (je nach Browsereinstellung) direkt in Ihrem Browser anzeigen lassen oder Sie laden das PDF-Dokument herunter und öffnen es mit einem PDF-Reader Ihrer Wahl. '
+            re += 'Eine Anleitung wie Sie für ausgewählte Browser die entsprechende Einstellung ändern können, finden Sie <a href="https://dns-indikatoren.de/guidance/">hier</a>.</small>' +"'"
+            
+            re += '\nembedded_feature_tab_title: Weitere Informationen'
+        else:
+            re += '\n\nembedded_feature_html: ' + "'" +'<p>Additional data series for the indicator can be found '
+            re += '<a href="' + pageLinkDic[toggle][lang].replace('www.','https://').replace('/en/','/').replace('/status','/public/AddInfos/en') + '/' + filename + '.pdf" target="_blank" >here</a>.</p>'
+            re += '<br><small>Note: You can display the PDF document directly in your browser or download the PDF document and open it with a PDF reader of your choice. We will be happy to advise you.</small>' +"'"
+            re += '\nembedded_feature_tab_title: Additional information'
+            
     return re
 
 # This function returns the filename in the following shape: 7-2-ab
@@ -528,15 +540,26 @@ def getSourcesFct(index, lang):
         c += 1
         d = -1
         appendix = ['','b','c','d','e','f']
-        re += '\nsource_active_' + str(c) + ': true'
-        re += '\nsource_organisation_' + str(c) + ": '" + '<a href="' + orgas.loc[orgaId, 'Homepage ' +lang] +'">' + orgas.loc[orgaId, 'Bezeichnung ' + lang] +"</a>'"
-        re += '\nsource_organisation_' + str(c) + "_short: '" + '<a href="' + orgas.loc[orgaId, 'Homepage ' +lang] + '" target="_blank">' +  orgas.loc[orgaId, 'Bezeichnung ' + lang] +"</a>'" #'Bezeichnung lang ' + lang] +"</a>'"
-        re += '\nsource_organisation_logo_' + str(c) + ': ' + "'" + '<a href="' + getLanguageDependingContent(orgas, orgaId, 'Homepage ', lang) + '" target="_blank"><img src="' + pageLinkDic[toggle][lang].replace('/en/','/').replace('status','public/OrgImg' + lang + '/') + orgas.loc[orgaId, 'imgId'] + '.png" alt="' + orgas.loc[orgaId, 'Bezeichnung ' + lang] + '" title=" ' + getTitle('linkToSrcOrga', orgas.loc[orgaId, 'Bezeichnung ' + lang], lang) + '" style="height:60px; width:148px; border: transparent"/></a>' + "'"
+        if pd.isnull(orgas.loc[orgaId, 'LinkMeldung' + lang]):
+            alert =''
+        else:
+            alert = orgas.loc[orgaId, 'LinkMeldung' + lang]
+        re1 = ''
+        re1 += '\nsource_active_' + str(c) + ': true'
+        re1 += '\nsource_organisation_' + str(c) + ": " + '<a href="' + orgas.loc[orgaId, 'Homepage ' +lang] + '" target="_blank"' + '>' + orgas.loc[orgaId, 'Bezeichnung ' + lang] +"</a>"
+        re1 += '\nsource_organisation_' + str(c) + "_short: " + '<a href="' + orgas.loc[orgaId, 'Homepage ' +lang] + '" target="_blank">' +  orgas.loc[orgaId, 'Bezeichnung ' + lang] +"</a>" #'Bezeichnung lang ' + lang] +"</a>'"
+        re1 += '\nsource_organisation_logo_' + str(c) + ': ' + '<a href="' + getLanguageDependingContent(orgas, orgaId, 'Homepage ', lang) + '" target="_blank"><img src="' + pageLinkDic[toggle][lang].replace('/en/','/').replace('status','public/OrgImg' + lang + '/') + orgas.loc[orgaId, 'imgId'] + '.png" alt="' + orgas.loc[orgaId, 'Bezeichnung ' + lang] + '" title=" ' + getTitle('linkToSrcOrga', orgas.loc[orgaId, 'Bezeichnung ' + lang], lang) + '" style="height:60px; width:148px; border:transparent"/></a>'
+        
+        if not orgaId == 'Q_DESTATIS':
+            re1 = re1.replace('target="_blank"', 'target="_blank" onclick="return confirm_alert(' + "'" + alert + "', '" + lang + "'" + ')"')
+        re += re1
         
         for linkId in srcDic[orgaId]:
             d += 1
             re += '\nsource_url_' + str(c) + appendix[d] + ": '" + getLanguageDependingContent(links, linkId, 'Link ', lang) + "'"
             re += '\nsource_url_text_' + str(c) + appendix[d] + ': ' + txtFct('false', 'true', links.loc[linkId, 'Text ' + lang], lang)
+            if not orgaId == 'Q_DESTATIS':
+                re += '\nsource_url_alert_' + str(c) + appendix[d] + ': ' + alert
         re += '\n'  
     return re
 
@@ -972,6 +995,8 @@ def getWeatherFct(index, lang):
         if lang == 'En':
             reTLComplete = reTLComplete.replace('Jährliches Ziel', 'Annual target').replace('Ziel', 'Target')
         reTp = '\ngraph_target_points:' + reTpComplete + reTLComplete
+    if lang == 'En':
+        re = re.replace('Bewertung ausgesetzt', 'Assessment suspended')
     if len(re3) > 0:
         re3 = '\ngraph_annotations:' + re3
     return re, reTp, re3, reHeader
@@ -1023,7 +1048,7 @@ def replaceFct(dic, inpt, lang):
     inpt = decmark_reg.sub('&nbsp;',inpt) # replace all whitespaces between numeric values
     return inpt.replace('XXX', '')
         
-def txtFct (textInpt, withAbb, inpt, lang):
+def txtFct(textInpt, withAbb, inpt, lang):
     re = replaceFct(replaceDic, wrappingFct(nanFct(inpt)), lang)
     if textInpt == 'true':
         re = replaceFct(replaceDicTextOnly, wrappingFct(nanFct(re)), lang)      
@@ -1151,6 +1176,7 @@ for page in meta.index:                                                         
     \npostulate: " + txtFct('false', 'true', meta.loc[page, 'Tab_3a_Postulate.BezEn'], 'En') + "\
     \n\n#content \
     \ncontent_and_progress: " + txtFct('true', 'true', "<b>" + contentText['En'] + "</b><br>" + getContentFct(page, 'En'), 'En').replace('<br>','<br><br>') + "\
+    " + getEmbedd(page, 'En') + "\
     \n\n#Sources\
     \n" + getSourcesFct(page, 'En') + "\
     \ncopyright: '&copy; Federal Statistical Office (Destatis), " + year + "'\

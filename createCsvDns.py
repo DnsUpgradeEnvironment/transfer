@@ -14,7 +14,7 @@ path = os.getcwd()
 
 #toggle = 'Upgrade'
 toggle = 'Prüf'
-toggle = 'Staging'
+#toggle = 'Staging'
 
 imgTargetPath = path.replace('\\transfer', '\dns-data\data\\')
 
@@ -34,7 +34,7 @@ categories = pd.read_excel(path + '\\Dic_Disagg_Kategorien.xlsx',  index_col=0)
 expressions = pd.read_excel(path + '\\Dic_Disagg_Ausprägungen.xlsx',  index_col=0)
 units = pd.read_excel(path + '\\Dic_Einheit.xlsx',  index_col=0)
 data = pd.read_excel(path + '\\Exp_data.xlsx',  index_col=0)
-weather2 = pd.read_excel(path + '\\Tab_5c_Wetter.xlsx',  index_col=0)
+weather2 = pd.read_excel(path + '\\Tab_5b_Wetter.xlsx',  index_col=0)
 
 geoCodesKreis = pd.read_excel(path + '\\Dic_GeoCodes.xlsx',  index_col=2)
 
@@ -111,7 +111,11 @@ for page in meta.index:
         
         #lets find out which years contain data for this indicator
         yearsWithValues = []
-        for year in np.arange(1990, 2025):  
+        if page == '08.4x':
+            ys = np.arange(2000,2017)
+        else: 
+            ys = np.arange(1990, 2025)
+        for year in ys:  
             year = str(year)
             if (year in pageData.dropna(axis=1,how='all').columns and not meta.loc[page,str(year)]):
                 yearsWithValues.append(year)
