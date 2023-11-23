@@ -18,7 +18,7 @@ path = os.getcwd()
 
 #toggle = 'Upgrade'
 toggle = 'Prüf'
-toggle = 'Staging'
+#toggle = 'Staging'
 
 imgTtargetPath = path.replace('\\transfer', '\dns-data\meta')
 
@@ -965,7 +965,7 @@ def getWeatherFct(index, lang):
                         if not targetYearH in targetYearsH:
                             targetYearsH.append(targetYearH)
                         if weather != '':
-                            reHeader += '\n      <a href="' + pageLinkDic[toggle][lang] + '"><img src="https://g205sdgs.github.io/sdg-indicators/public/Wettersymbole/' + weather + '.png" title="' + getWeatherTitel(targetYearH, {'De':'','En':''}, targetType, weather[0], lang) + '" alt="' + getAltWeather(weather, lang) + '"/>'
+                            reHeader += '\n      <a href="' + pageLinkDic[toggle][lang] + '"><img src="https://sdg-indikatoren.de/public/Wettersymbole/' + weather + '.png" title="' + getWeatherTitel(targetYearH, {'De':'','En':''}, targetType, weather[0], lang) + '" alt="' + getAltWeather(weather, lang) + '"/>'
                             reHeader += '\n      </a>' 
                                                             
                     #use only labels that should be used
@@ -985,7 +985,7 @@ def getWeatherFct(index, lang):
                 targetYearH = '/'.join(sorted(targetYearsH))    
         reHeader += '\n<div class="my-header-note">' 
         reHeader += '\n  <label class="default"><b>'
-        reHeader += headerNoteDic[reHeader.count("/sdg-indicators/public/Wettersymbole/")][lang].replace('XXX', targetYearH)
+        reHeader += headerNoteDic[reHeader.count("/sdg-indikatoren.de/public/Wettersymbole/")][lang].replace('XXX', targetYearH)
         reHeader += '\n  </b></label>'
         reHeader += '\n</div>'
                 
@@ -1111,84 +1111,84 @@ for abb in abbreviations.index:
 
 # --------------------------------------
 for page in meta.index:                                                             # page = 07.1.a,b
+    if not (meta.loc[page, 'Indikator gesperrt?'] and toggle == 'Staging'):
+        print(page)
     
-    print(page)
+        file = codecs.open(targetPath + '\\'+ getFilename(page) + '.md', 'w', 'utf-8')
+        fileEn = codecs.open(targetPath + '\\en\\' + getFilename(page) + '.md', 'w', 'utf-8')
+        
+        file.write("---\n\nlayout: indicator\
+        \ngoal: '" + str(meta.loc[page, 'Ziel']) + "'\
+        \nindicator: '" + getFilename(page).replace('-','.') + "'\
+        \nindicator_display: '" + page.lstrip('0').replace(',',', ') + "'\
+        \nindicator_sort_order: '" + getFilename(page) + "'\
+        \npermalink: /" + getFilename(page) + "/\
+        \n" + getSdgIndicators(page) + "\
+        \n\n#\nreporting_status: complete\
+        \npublished: true\
+        \ndata_non_statistical: false\
+        \n\n\n#Metadata\
+        \nnational_indicator_available: " + txtFct('false', 'true', meta.loc[page, 'Tab_4a_Indikatorenblätter.BezDe'], 'De') + "\
+        \n\ndns_indicator_definition: " + txtFct('true', 'true', meta.loc[page, 'DefinitionDe'], 'De') + "\
+        \n\ndns_indicator_intention: "+ txtFct('true', 'true', meta.loc[page, 'IntentionDe'], 'De') +"\
+        \n\ndata_state: " + dataState['De'] + "\
+        \n\nindicator_name: " + txtFct('false', 'false', meta.loc[page, 'Tab_4a_Indikatorenblätter.BezDe'], 'De') + "\
+        \nsection: " + txtFct('false', 'true', meta.loc[page, 'Tab_2a_Bereiche.BezDe'], 'De') + "\
+        \npostulate: " + txtFct('false', 'true', meta.loc[page, 'Tab_3a_Postulate.BezDe'], 'De') + "\
+        \ntarget_id: " + getTargetId(meta.loc[page, 'Tab_3a_Postulate.PNr']) + "\
+        \nprevious: " + getFilename(getPreviousIndex(page, 'prev')) + "\
+        \nnext: " + getFilename(getPreviousIndex(page, 'next')) + "\
+        \n\n#content \
+        \ncontent_and_progress: " + addLinkFct(txtFct('true', 'true', "<b>" + contentText['De'] + "</b><br>" + getContentFct(page, 'De'), 'De'), 'De').replace('<br>','<br><br>') + "\
+        " + getEmbedd(page, 'De') +"\
+        \n\n#Sources\
+        \n" + getSourcesFct(page, 'De') + "\
+        \n\n#Status\
+        \n" + getWeatherFct(page, 'De')[0] + "\
+        \n" + getWeatherFct(page, 'De')[1] + "\
+        \n\ndata_show_map: " + str(meta.loc[page, 'Karte anzeigen?']).lower() + "\
+        \ncopyright: '&copy; Statistisches Bundesamt (Destatis), " + year + "'\
+        \n\n" + getFootnotes(page, 'De').replace('<br>  - ', '<br>&nbsp;&nbsp;- ') + "\
+        \n\n" + getSpecifiedStuff(page,'Grafiktitel', 5, 'title', '', ' De') + "\
+        \n\n" + getSpecifiedStuff(page,'Untertitel', 5, 'title', '', ' De') + "\
+        \n\n" + getWeatherFct(page, 'De')[2] + "\
+        \n\n" + getSpecifiedStuff(page, 'Dezimalstellen', 4, 'decimals', '', '') +"\
+        \n\nspan_gaps: " + str(meta.loc[page, 'Lücken füllen?']).lower() + "\
+        \nshow_line: " + str(meta.loc[page, 'Linie anzeigen?']).lower() + "\
+        \n\n" +  getSpecifiedStuff(page, 'Grafiktyp', 3, 'type', '', '') + "\
+        " + getStartValues(page) +"\
+        \n\n" + getSpecifiedStuff(page, 'Achsenlimit', 4, 'minimum', 'maximum', '') + "\
+        \n\n" + getSpecifiedStuff(page, 'Schrittweite y-Achse', 4, 'step', '', '') + "\
+        \n\n" + getSpecifiedStuff(page, 'Zeitreihenbruch', 4, 'value', '', '') + "\
+        " + getStackedDisagg(page) + "\
+        " + getSomething('x_axis_label', meta.loc[page,'x-Achsenbezeichnung De']) + "\
+        " + getSomething('national_geographical_coverage', meta.loc[page,'Geografische Abdeckung De']) + "\
+        " + getSomething('special_evaluation', meta.loc[page,'Sonderauswertung?']) + "\
+        \n---\n\n" + getWeatherFct(page, 'De')[3])
     
-    file = codecs.open(targetPath + '\\'+ getFilename(page) + '.md', 'w', 'utf-8')
-    fileEn = codecs.open(targetPath + '\\en\\' + getFilename(page) + '.md', 'w', 'utf-8')
-    
-    file.write("---\n\nlayout: indicator\
-    \ngoal: '" + str(meta.loc[page, 'Ziel']) + "'\
-    \nindicator: '" + getFilename(page).replace('-','.') + "'\
-    \nindicator_display: '" + page.lstrip('0').replace(',',', ') + "'\
-    \nindicator_sort_order: '" + getFilename(page) + "'\
-    \npermalink: /" + getFilename(page) + "/\
-    \n" + getSdgIndicators(page) + "\
-    \n\n#\nreporting_status: complete\
-    \npublished: true\
-    \ndata_non_statistical: false\
-    \n\n\n#Metadata\
-    \nnational_indicator_available: " + txtFct('false', 'true', meta.loc[page, 'Tab_4a_Indikatorenblätter.BezDe'], 'De') + "\
-    \n\ndns_indicator_definition: " + txtFct('true', 'true', meta.loc[page, 'DefinitionDe'], 'De') + "\
-    \n\ndns_indicator_intention: "+ txtFct('true', 'true', meta.loc[page, 'IntentionDe'], 'De') +"\
-    \n\ndata_state: " + dataState['De'] + "\
-    \n\nindicator_name: " + txtFct('false', 'false', meta.loc[page, 'Tab_4a_Indikatorenblätter.BezDe'], 'De') + "\
-    \nsection: " + txtFct('false', 'true', meta.loc[page, 'Tab_2a_Bereiche.BezDe'], 'De') + "\
-    \npostulate: " + txtFct('false', 'true', meta.loc[page, 'Tab_3a_Postulate.BezDe'], 'De') + "\
-    \ntarget_id: " + getTargetId(meta.loc[page, 'Tab_3a_Postulate.PNr']) + "\
-    \nprevious: " + getFilename(getPreviousIndex(page, 'prev')) + "\
-    \nnext: " + getFilename(getPreviousIndex(page, 'next')) + "\
-    \n\n#content \
-    \ncontent_and_progress: " + addLinkFct(txtFct('true', 'true', "<b>" + contentText['De'] + "</b><br>" + getContentFct(page, 'De'), 'De'), 'De').replace('<br>','<br><br>') + "\
-    " + getEmbedd(page, 'De') +"\
-    \n\n#Sources\
-    \n" + getSourcesFct(page, 'De') + "\
-    \n\n#Status\
-    \n" + getWeatherFct(page, 'De')[0] + "\
-    \n" + getWeatherFct(page, 'De')[1] + "\
-    \n\ndata_show_map: " + str(meta.loc[page, 'Karte anzeigen?']).lower() + "\
-    \ncopyright: '&copy; Statistisches Bundesamt (Destatis), " + year + "'\
-    \n\n" + getFootnotes(page, 'De').replace('<br>  - ', '<br>&nbsp;&nbsp;- ') + "\
-    \n\n" + getSpecifiedStuff(page,'Grafiktitel', 5, 'title', '', ' De') + "\
-    \n\n" + getSpecifiedStuff(page,'Untertitel', 5, 'title', '', ' De') + "\
-    \n\n" + getWeatherFct(page, 'De')[2] + "\
-    \n\n" + getSpecifiedStuff(page, 'Dezimalstellen', 4, 'decimals', '', '') +"\
-    \n\nspan_gaps: " + str(meta.loc[page, 'Lücken füllen?']).lower() + "\
-    \nshow_line: " + str(meta.loc[page, 'Linie anzeigen?']).lower() + "\
-    \n\n" +  getSpecifiedStuff(page, 'Grafiktyp', 3, 'type', '', '') + "\
-    " + getStartValues(page) +"\
-    \n\n" + getSpecifiedStuff(page, 'Achsenlimit', 4, 'minimum', 'maximum', '') + "\
-    \n\n" + getSpecifiedStuff(page, 'Schrittweite y-Achse', 4, 'step', '', '') + "\
-    \n\n" + getSpecifiedStuff(page, 'Zeitreihenbruch', 4, 'value', '', '') + "\
-    " + getStackedDisagg(page) + "\
-    " + getSomething('x_axis_label', meta.loc[page,'x-Achsenbezeichnung De']) + "\
-    " + getSomething('national_geographical_coverage', meta.loc[page,'Geografische Abdeckung De']) + "\
-    " + getSomething('special_evaluation', meta.loc[page,'Sonderauswertung?']) + "\
-    \n---\n\n" + getWeatherFct(page, 'De')[3])
-
-    fileEn.write("---\n\nlanguage: en\
-    \nnational_indicator_available: " + txtFct('false', 'true', meta.loc[page, 'Tab_4a_Indikatorenblätter.BezEn'], 'En') + "\
-    \n\ndns_indicator_definition: " + txtFct('true', 'true', meta.loc[page, 'DefinitionEn'], 'En') + "\
-    \n\ndns_indicator_intention: "+ txtFct('ture', 'true', meta.loc[page, 'IntentionEn'], 'En') +"\
-    \n\ndata_state: " + dataState['En'] + "\
-    \n\nindicator_name: " + txtFct('false', 'false', meta.loc[page, 'Tab_4a_Indikatorenblätter.BezEn'], 'En') + "\
-    \nsection: " + txtFct('false', 'true', meta.loc[page, 'Tab_2a_Bereiche.BezEn'], 'En') + "\
-    \npostulate: " + txtFct('false', 'true', meta.loc[page, 'Tab_3a_Postulate.BezEn'], 'En') + "\
-    \n\n#content \
-    \ncontent_and_progress: " + txtFct('true', 'true', "<b>" + contentText['En'] + "</b><br>" + getContentFct(page, 'En'), 'En').replace('<br>','<br><br>') + "\
-    " + getEmbedd(page, 'En') + "\
-    \n\n#Sources\
-    \n" + getSourcesFct(page, 'En') + "\
-    \ncopyright: '&copy; Federal Statistical Office (Destatis), " + year + "'\
-    \n\n" + getFootnotes(page, 'En').replace('<br>  - ', '<br>&nbsp;&nbsp;- ') + "\
-    \n\n" + getSpecifiedStuff(page,'Grafiktitel', 5, 'title', '', ' En') + "\
-    \n\n" + getSpecifiedStuff(page,'Untertitel', 5, 'title', '', ' En') + "\
-    \n\n" + getWeatherFct(page, 'En')[2] + "\
-    " + getSomething('x_axis_label', meta.loc[page,'x-Achsenbezeichnung En']) + "\
-    " + getSomething('national_geographical_coverage', meta.loc[page,'Geografische Abdeckung En']) + "\
-    \n" + getWeatherFct(page, 'En')[0] +"\
-    \n" + getWeatherFct(page, 'En')[1] +"\
-    \n---\n\n" + getWeatherFct(page, 'En')[3])
-    
-    fileEn.close()
-    file.close()
+        fileEn.write("---\n\nlanguage: en\
+        \nnational_indicator_available: " + txtFct('false', 'true', meta.loc[page, 'Tab_4a_Indikatorenblätter.BezEn'], 'En') + "\
+        \n\ndns_indicator_definition: " + txtFct('true', 'true', meta.loc[page, 'DefinitionEn'], 'En') + "\
+        \n\ndns_indicator_intention: "+ txtFct('ture', 'true', meta.loc[page, 'IntentionEn'], 'En') +"\
+        \n\ndata_state: " + dataState['En'] + "\
+        \n\nindicator_name: " + txtFct('false', 'false', meta.loc[page, 'Tab_4a_Indikatorenblätter.BezEn'], 'En') + "\
+        \nsection: " + txtFct('false', 'true', meta.loc[page, 'Tab_2a_Bereiche.BezEn'], 'En') + "\
+        \npostulate: " + txtFct('false', 'true', meta.loc[page, 'Tab_3a_Postulate.BezEn'], 'En') + "\
+        \n\n#content \
+        \ncontent_and_progress: " + txtFct('true', 'true', "<b>" + contentText['En'] + "</b><br>" + getContentFct(page, 'En'), 'En').replace('<br>','<br><br>') + "\
+        " + getEmbedd(page, 'En') + "\
+        \n\n#Sources\
+        \n" + getSourcesFct(page, 'En') + "\
+        \ncopyright: '&copy; Federal Statistical Office (Destatis), " + year + "'\
+        \n\n" + getFootnotes(page, 'En').replace('<br>  - ', '<br>&nbsp;&nbsp;- ') + "\
+        \n\n" + getSpecifiedStuff(page,'Grafiktitel', 5, 'title', '', ' En') + "\
+        \n\n" + getSpecifiedStuff(page,'Untertitel', 5, 'title', '', ' En') + "\
+        \n\n" + getWeatherFct(page, 'En')[2] + "\
+        " + getSomething('x_axis_label', meta.loc[page,'x-Achsenbezeichnung En']) + "\
+        " + getSomething('national_geographical_coverage', meta.loc[page,'Geografische Abdeckung En']) + "\
+        \n" + getWeatherFct(page, 'En')[0] +"\
+        \n" + getWeatherFct(page, 'En')[1] +"\
+        \n---\n\n" + getWeatherFct(page, 'En')[3])
+        
+        fileEn.close()
+        file.close()

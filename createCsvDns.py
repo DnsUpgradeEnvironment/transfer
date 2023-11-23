@@ -76,7 +76,7 @@ def txtFct(string):
     
 #since meta contains one dataset per indicator we`re using meta`s index as loop variable
 for page in meta.index: 
-    if page == '04.2.a,bx' or page == '08.4x':
+    if (meta.loc[page, 'Indikator gesperrt?'] and toggle == 'Staging'):
         continue
     else:
         #ibNr is present in both, meta and data, so we`re using it to get the relevant part of data                                                            
@@ -147,7 +147,7 @@ for page in meta.index:
             
             #add "special years" like half years or time periods like "2010-2020"
             specials = {}
-            for s in range(1,21):
+            for s in range(1,61):
                 if 'AltLabel' + str(s) in pageData.dropna(axis=1,how='all').columns:
                     specials[s] = [pageData.loc[DNr,'AltLabel' + str(s)], pageData.loc[DNr,'Alt' + str(s)]]
             
@@ -249,16 +249,14 @@ for page in meta.index:
                     targetData.append(line)
     
     # replace the 'K_...' key with the translation keys
+    if 'time series' in columns and 'K_SERIES' in columns:
+        columns.pop(columns.index('time series'))
     for column in columns:
         if column == 'K_SERIES':
             if meta.loc[page, 'Umschalten zwischen Zeitreihen?']:
                 columns[columns.index(column)] = 'Series'
             else:
-                if 'time series' in columns:
-                    #del columns[columns.index(column)]
-                    columns.pop(columns.index(column))
-                else:
-                    columns[columns.index(column)] = 'time series'
+                columns[columns.index(column)] = 'time series'
         elif column[:2] == 'K_':
             columns[columns.index(column)] = categories.loc[column, 'Kategorie En'].lower()
             

@@ -16,10 +16,9 @@ toggle = 'Prüf'
 #toggle = 'Staging'
 
 if toggle == 'Staging':
-    targetPath = path.replace('\\transfer', '\sdg-translations')
+    targetPath =  'C:\\Users\\Dauerausleihe04\\Documents\\DNS\\Plattform\\sdg-translations'
 else:   
-    targetPath = path.replace('\\transfer','\sdg-translations')
-    
+    targetPath = path.replace('\\MoBosse\DnsUpgradeEnvironment\\transfer','\\DNS\DnsTestEnvironment\sdg-translations')
 
 meta = pd.read_excel(path + '\\Exp_meta.xlsx')
 meta.set_index('Tab_4a_Indikatorenblätter.Indikatoren', inplace = True)

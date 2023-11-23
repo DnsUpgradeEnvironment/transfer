@@ -76,6 +76,9 @@ for i in weather.index:
         
         if wType == "R":
             meanDir = weather.loc[i, str(yearsWithValues[-1])] - weather.loc[i, str(yearsWithValues[-6])]
+            if i == "11.1.b":
+                print(meanDir)
+            meanDir = 0
             lastDir = weather.loc[i, str(yearsWithValues[-1])] - weather.loc[i, str(yearsWithValues[-2])]
             if (wDir == "steigen" and meanDir > 0) or (wDir == "sinken" and meanDir < 0):
                 if (wDir == "steigen" and lastDir > 0) or (wDir == "sinken" and lastDir < 0):
