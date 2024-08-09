@@ -26,6 +26,11 @@ indicators = pd.read_excel(path + '\\Tab_5a_Indikatoren.xlsx',  index_col=0)
 weather = pd.read_excel(path + '\\Tab_5b_Wetter.xlsx',  index_col=0)
 links = pd.read_excel(path + '\\Tab_8a_Links.xlsx',  index_col=0)
 orgas = pd.read_excel(path + '\\Tab_7a_Quellen.xlsx',  index_col=0)
+goals = pd.read_excel(path + '\\Tab_1a_Ziele.xlsx',  index_col=0)
+areas = pd.read_excel(path + '\\Tab_2a_Bereiche.xlsx',  index_col=0)
+postulates = pd.read_excel(path + '\\Tab_3a_Postulate.xlsx',  index_col=0)
+
+
 
 data = pd.read_excel(path + '\\Exp_data.xlsx',  index_col=0)
 
@@ -138,6 +143,42 @@ file.close()
 fileEn.close()    
     
     
-    
-    
+file = codecs.open(targetPath + '\\translations\de\dns_goals.yml', 'w', 'utf-8')
+fileEn = codecs.open(targetPath + '\\translations\en\dns_goals.yml', 'w', 'utf-8')  
 
+for goal in goals.index:
+    file.write(str(goals.loc[goal, "Ziel"])+'-title: ' + goals.loc[goal, "BezLangDe"] + '\n' + str(goals.loc[goal, "Ziel"]) + '-short: ' + goals.loc[goal, "BezKurzDe"] + '\n')
+    fileEn.write(str(goals.loc[goal, "Ziel"])+'-title: ' + goals.loc[goal, "BezLangEn"] + '\n' + str(goals.loc[goal, "Ziel"]) + '-short: ' + goals.loc[goal, "BezKurzEn"] + '\n')
+    
+file.close()    
+fileEn.close()
+
+file = codecs.open(targetPath + '\\translations\de\dns_ranges.yml', 'w', 'utf-8')
+fileEn = codecs.open(targetPath + '\\translations\en\dns_ranges.yml', 'w', 'utf-8')  
+
+for area in areas.index:
+    if area[1] == '0':
+        sdg = area[2:3]
+    else:
+        sdg = area[1:3]
+    key = sdg  + '.' + area[-1] + '-title: '
+    file.write(key + areas.loc[area, "BezDe"] + '\n')
+    fileEn.write(key + areas.loc[area, "BezEn"] + '\n')
+    
+file.close()    
+fileEn.close()
+
+file = codecs.open(targetPath + '\\translations\de\dns_targets.yml', 'w', 'utf-8')
+fileEn = codecs.open(targetPath + '\\translations\en\dns_targets.yml', 'w', 'utf-8')  
+
+for postulate in postulates.index:
+    if postulate[1] == '0':
+        sdg = postulate[2:3]
+    else:
+        sdg = postulate[1:3]
+    key = sdg  + '.' + postulate[6] + '.' + postulate[-1] + '-title: '
+    file.write(key + postulates.loc[postulate, "BezDe"] + '\n')
+    fileEn.write(key + postulates.loc[postulate, "BezEn"] + '\n')
+    
+file.close()    
+fileEn.close()

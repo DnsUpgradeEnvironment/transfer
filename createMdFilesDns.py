@@ -57,16 +57,16 @@ year = date.strftime("%Y")
 
 # ----- Variables -----------
 
-dataState = {'De': 'Der Indikatorenbericht 2022 hat den Datenstand 31.10.2022. Die Daten auf dieser Plattform werden regelmäßig aktualisiert, sodass online aktuellere Daten verfügbar sein können als im <a href="https://dns-indikatoren.de/publications_reports/">Indikatorenbericht 2022</a> veröffentlicht.',
-             'En': 'The data published in the indicator report 2022 is as of 31 October 2022. The data shown on this platform is updated regularly, so that more current data may be available online than published in the <a href="https://dns-indikatoren.de/en/publications_reports/">indicator report 2022</a>.'}
+dataState = {'De': 'Der Indikatorenbericht 2022 hat den Datenstand 31.10.2022. Die Daten auf dieser Plattform werden regelmäßig aktualisiert, sodass online aktuellere Daten verfügbar sein können als im <a href="https://dns-indikatoren.de/assets/Publikationen/Indikatorenberichte/2022.pdf">Indikatorenbericht 2022</a> veröffentlicht.',
+             'En': 'The data published in the indicator report 2022 is as of 31 October 2022. The data shown on this platform is updated regularly, so that more current data may be available online than published in the <a href="https://dns-indikatoren.de/assets/Publikationen/Indikatorenberichte/2022.pdf">indicator report 2022</a>.'}
 
 dicFootnoteLabels = {'Sing De':'Anmerkung',
                'Plur De': 'Anmerkungen',
                'Sing En':'Note',
                'Plur En': 'Notes'}
 
-contentText = {'De': 'Text aus dem <a href="https://dns-indikatoren.de/publications_reports/">Indikatorenbericht 2022 </a>',
-               'En': 'Text from the <a href="https://dns-indikatoren.de/en/publications_reports/">Indicator Report 2022 </a>'}
+contentText = {'De': 'Text aus dem <a href="https://dns-indikatoren.de/assets/Publikationen/Indikatorenberichte/2022.pdf">Indikatorenbericht 2022 </a>',
+               'En': 'Text from the <a href="https://dns-indikatoren.de/assets/Publikationen/Indikatorenberichte/2022.pdf">Indicator Report 2022 </a>'}
 
 keyDict = {'Grafiktitel': 'graph_titles: ',
            'Untertitel': 'graph_subtitles: ',
@@ -180,6 +180,32 @@ titleDic = {'linkToSrcOrga':{
                     }
                 }
             }
+
+import requests
+
+
+def getAddInfo3(ind, lang):
+    goal = ind[:2]
+    if goal[0]=='0':
+        goal = goal [1:]
+
+    linkToInd = 'https://dns-indikatoren-dialogfassung.github.io/' + getFilename(page) + '/'
+    try:
+        requestObj = requests.get(linkToInd);
+        if(requestObj.status_code == 404):
+            linkToInd = 'https://dns-indikatoren-dialogfassung.github.io/'
+        else:
+            print("XXX:", ind)
+    except Exception as e:
+            print("ERROR: " + str(e))
+    if toggle == "staging":
+        re = '<div class="row justify-content-around">\n  <div class="col-sm-12 d-grid gap-2" style="padding-left: 24px; padding-right: 24px">\n    <a class="btn btn-primary btn-block goal-' + goal + ' navigation-btn text-nowrap" href="' + linkToInd + '" role="Button"><b>Aktuell: Indikatoren in der Dialogfassung</b></a>\n  </div>\n</div>'
+    else:
+        re = getWeatherFct(page, lang)[3]
+    return re
+
+
+
 
 def getWeatherTitel(year, asOfData, typus, ws, lang):
     if pd.isnull(ws):
@@ -1164,7 +1190,7 @@ for page in meta.index:                                                         
         " + getSomething('x_axis_label', meta.loc[page,'x-Achsenbezeichnung De']) + "\
         " + getSomething('national_geographical_coverage', meta.loc[page,'Geografische Abdeckung De']) + "\
         " + getSomething('special_evaluation', meta.loc[page,'Sonderauswertung?']) + "\
-        \n---\n\n" + getWeatherFct(page, 'De')[3])
+        \n---\n\n" + getAddInfo3(page, 'De')) #getWeatherFct(page, 'De')[3])
     
         fileEn.write("---\n\nlanguage: en\
         \nnational_indicator_available: " + txtFct('false', 'true', meta.loc[page, 'Tab_4a_Indikatorenblätter.BezEn'], 'En') + "\
