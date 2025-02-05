@@ -17,20 +17,20 @@ import string
 path = os.getcwd()
 
 toggle = 'Upgrade'
-#oggle = 'Prüf'
+#toggle = 'Prüf'
 #toggle = 'Staging'
 
-imgTtargetPath = path.replace('\\transfer', '\dns-data\meta')
-
 if toggle == 'Upgrade':
-    targetPath = 'C:\\Users\\Dauerausleihe04\\Documents\\DNS\\DnsUpgradeEnvironment\\dns-data\\meta'
-    path = path.replace('DnsTestEnvironment\\transfer','DnsUpgradeEnvironment\\transfer')
+    targetPath = path.replace('\\DnsUpgradeEnvironment\\transfer','\\DnsUpgradeEnvironment\\dns-data\\meta\\')
 elif toggle == 'Prüf':
-    targetPath = path.replace('\\transfer','\\dns-data\\meta\\')
-else:   
-    targetPath = path.replace('\\DnsTestEnvironment\\transfer','\\Plattform\\open-sdg-data-starter\\meta')
-
+    targetPath =  path.replace('\\DnsTestEnvironment\\transfer','\\DnsTestEnvironment\\dns-data\\meta\\')
+elif toggle == 'Staging':   
+    targetPath = path.replace('\\DnsTestEnvironment\\transfer','\\Plattform\\open-sdg-data-starter\\meta\\')
     
+
+imgTargetPath = path.replace('\\transfer', '\dns-data\data\\')
+
+
 
 meta = pd.read_excel(path + '\\Exp_meta.xlsx')
 meta.set_index('Tab_4a_Indikatorenblätter.Indikatoren', inplace = True)

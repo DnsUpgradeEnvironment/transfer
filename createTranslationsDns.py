@@ -12,13 +12,16 @@ import os
 
 path = os.getcwd()
 
-toggle = 'Prüf'
+toggle = 'Upgrade'
+#toggle = 'Prüf'
 #toggle = 'Staging'
 
-if toggle == 'Staging':
-    targetPath =  'C:\\Users\\Dauerausleihe04\\Documents\\DNS\\Plattform\\sdg-translations'
-else:   
-    targetPath = path.replace('\\MoBosse\DnsUpgradeEnvironment\\transfer','\\DNS\DnsTestEnvironment\sdg-translations')
+if toggle == 'Upgrade':
+    targetPath = path.replace('\\DnsUpgradeEnvironment\\transfer','\\DnsUpgradeEnvironment\\sdg-translations')
+elif toggle == 'Prüf':
+    targetPath =  path.replace('\\DnsTestEnvironment\\transfer','\\DnsTestEnvironment\\sdg-translations')
+elif toggle == 'Staging':   
+    targetPath = path.replace('\\DnsTestEnvironment\\transfer','\\plattform\\sdg-translations')
 
 meta = pd.read_excel(path + '\\Exp_meta.xlsx')
 meta.set_index('Tab_4a_Indikatorenblätter.Indikatoren', inplace = True)
