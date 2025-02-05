@@ -11,21 +11,20 @@ import os
 x = {}
 #get the current path and the path where to save the files
 path = os.getcwd()
-#path = 'C:\\Users\\Dauerausleihe04\\Documents\\DNS\\DnsUpgradeEnvironment\\transfer'
 
 toggle = 'Upgrade'
 #toggle = 'Prüf'
 #toggle = 'Staging'
 
-imgTargetPath = path.replace('\\transfer', '\dns-data\data\\')
-
 if toggle == 'Upgrade':
-    targetPath = 'C:\\Users\\Dauerausleihe04\\Documents\\DNS\\DnsUpgradeEnvironment\\dns-data\\data\\'
-    path = path.replace('DnsTestEnvironment\\transfer','DnsUpgradeEnvironment\\transfer')
+    targetPath = path.replace('\\DnsUpgradeEnvironment\\transfer','\\DnsUpgradeEnvironment\\dns-data\\data\\')
 elif toggle == 'Prüf':
-    targetPath = path.replace('\\transfer','\\dns-data\\data\\')
-else:
+    targetPath =  path.replace('\\DnsTestEnvironment\\transfer','\\DnsTestEnvironment\\dns-data\\data\\')
+elif toggle == 'Staging':   
     targetPath = path.replace('\\DnsTestEnvironment\\transfer','\\Plattform\\open-sdg-data-starter\\data\\')
+    
+
+imgTargetPath = path.replace('\\transfer', '\dns-data\data\\')
 
 
 #read some xlsx files
