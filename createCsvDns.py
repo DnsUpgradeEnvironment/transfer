@@ -8,35 +8,37 @@ Created on Wed Jul  6 11:47:07 2022
 import pandas as pd
 import numpy as np
 import os
-
+x = {}
 #get the current path and the path where to save the files
 path = os.getcwd()
+#path = 'C:\\Users\\Dauerausleihe04\\Documents\\DNS\\DnsUpgradeEnvironment\\transfer'
 
-#toggle = 'Upgrade'
-toggle = 'Prüf'
+toggle = 'Upgrade'
+#toggle = 'Prüf'
 #toggle = 'Staging'
 
 imgTargetPath = path.replace('\\transfer', '\dns-data\data\\')
 
 if toggle == 'Upgrade':
-    targetPath = path.replace('\\transfer', '\dns-data\data\\')
+    targetPath = 'C:\\Users\\Dauerausleihe04\\Documents\\DNS\\DnsUpgradeEnvironment\\dns-data\\data\\'
+    path = path.replace('DnsTestEnvironment\\transfer','DnsUpgradeEnvironment\\transfer')
 elif toggle == 'Prüf':
-    targetPath = path.replace('\\Documents\\MoBosse\\DnsUpgradeEnvironment\\transfer','\\Documents\\DNS\\DnsTestEnvironment\\dns-data\\data\\')
+    targetPath = path.replace('\\transfer','\\dns-data\\data\\')
 else:
-    targetPath = path.replace('\\Documents\\MoBosse\\DnsUpgradeEnvironment\\transfer','\\Documents\\DNS\\Plattform\\open-sdg-data-starter\\data\\')
+    targetPath = path.replace('\\DnsTestEnvironment\\transfer','\\Plattform\\open-sdg-data-starter\\data\\')
 
 
 #read some xlsx files
 meta = pd.read_excel(path + '\\Exp_meta.xlsx')
 meta.set_index('Tab_4a_Indikatorenblätter.Indikatoren', inplace = True)
-indicators = pd.read_excel(path + '\\Tab_5a_Indikatoren.xlsx',  index_col=0)
-categories = pd.read_excel(path + '\\Dic_Disagg_Kategorien.xlsx',  index_col=0)
-expressions = pd.read_excel(path + '\\Dic_Disagg_Ausprägungen.xlsx',  index_col=0)
+indicators = pd.read_excel(path + '\\Tab_5a_Indikatoren.xlsx', index_col=0)
+categories = pd.read_excel(path + '\\Dic_Disagg_Kategorien.xlsx', index_col=0)
+expressions = pd.read_excel(path + '\\Dic_Disagg_Ausprägungen.xlsx', index_col=0)
 units = pd.read_excel(path + '\\Dic_Einheit.xlsx',  index_col=0)
 data = pd.read_excel(path + '\\Exp_data.xlsx',  index_col=0)
-weather2 = pd.read_excel(path + '\\Tab_5b_Wetter.xlsx',  index_col=0)
+weather2 = pd.read_excel(path + '\\Tab_5b_Wetter.xlsx', index_col=0)
 
-geoCodesKreis = pd.read_excel(path + '\\Dic_GeoCodes.xlsx',  index_col=2)
+geoCodesKreis = pd.read_excel(path + '\\Dic_GeoCodes.xlsx', index_col=2)
 
 #concat weather and indicators
 weatherWithIndicatorInfos = pd.merge(weather2, indicators, left_on="INr", right_index=True, how="left", sort=False)
@@ -125,6 +127,10 @@ for page in meta.index:
             for year in range(int(yearsWithValues[0]), int(yearsWithValues[-1])):
                 if not str(year) in yearsWithValues:
                     yearsWithValues.append(str(year))
+        elif len(yearsWithValues) == 1:
+            s = int(yearsWithValues[0])
+            yearsWithValues.append(str(s-1))
+            yearsWithValues.append(str(s+1))
                      
             
         # we also need a row for the target year(s)
@@ -158,8 +164,12 @@ for page in meta.index:
                 for column in columns:
                     if column == 'Year':
                         line['Year'] = str(year)
+                        if page =="16.4":
+                            print(DNr, column, line)   
                     elif column == 'Units' and not pd.isnull(units.loc[pageData.loc[DNr, 'Einheit'],'Einheit En']):
                         line[column] = txtFct(units.loc[pageData.loc[DNr, 'Einheit'],'Einheit En'].lower())
+                        if page =="16.4":
+                            print(DNr, column, line)
                     elif (column == 'time series' or column == 'Series'):
                         if 'K_SERIES' in list(pageData['Disaggregation 1 Kategorie']):
                             try:
@@ -168,6 +178,8 @@ for page in meta.index:
                                 line[column] = indicators.loc[pageData.loc[DNr, 'INr'], 'Indikator in Auswahlfeld En'].lower()
                         elif not pd.isnull(indicators.loc[pageData.loc[DNr, 'INr'], 'Indikator in Auswahlfeld En']):
                             line[column] = indicators.loc[pageData.loc[DNr, 'INr'], 'Indikator in Auswahlfeld En'].lower()
+                        if page =="16.4":
+                            print(DNr, column, line)
                     for d in ['1', '2', '3']:
                         if column == pageData.loc[DNr, 'Disaggregation ' + d + ' Kategorie']:
                             
@@ -176,11 +188,10 @@ for page in meta.index:
                                 if meta.loc[page, 'Umschalten zwischen Zeitreihen?']:
                                     line['Series'] = line.pop('time series')
                             
-                            elif float(str(year).replace(',','.')) < 2025:   
+                            elif float(str(year).replace(',','.')) < 2030:   
                                 line[categories.loc[column, 'Kategorie En'].lower()] = expressions.loc[pageData.loc[DNr, 'Disaggregation ' + d + ' Ausprägung'], 'Ausprägung En'].lower()
                                 
                             elif pageData.loc[DNr, 'Disaggregation ' + d + ' Ausprägung'] in list(dfT.Spezifikation):
-                                print("222")
                                 line[categories.loc[column, 'Kategorie En'].lower()] = expressions.loc[pageData.loc[DNr, 'Disaggregation ' + d + ' Ausprägung'], 'Ausprägung En'].lower()
                              
                             elif len(list(dfT.Spezifikation)) > 0:
@@ -193,7 +204,8 @@ for page in meta.index:
                                 if len(geo) == 4:
                                     geo = '0' + geo
                                 line['GeoCode'] = 'code' + geo
-                            
+                            if page =="16.4":
+                                print(DNr, column, line)
                     if column == 'Value' and str(year) in pageData.columns:
                         line[column] = pageData.loc[DNr, str(year).replace('.',',')]
                         
@@ -247,7 +259,7 @@ for page in meta.index:
                    
                 if len(line) > 0:
                     targetData.append(line)
-    
+            
     # replace the 'K_...' key with the translation keys
     if 'time series' in columns and 'K_SERIES' in columns:
         columns.pop(columns.index('time series'))
@@ -275,7 +287,7 @@ for page in meta.index:
         
         #delete columns that contain only same values to not show disaggregations where there isn`t anything to select
         for column in df.columns:
-            if not (column == 'Year' or column == 'Units' or column == 'Series') and (df[column] == df[column][0]).all():
+            if not (column == 'Year' or column == 'Units' or column == 'Series' or column == 'Value') and (df[column] == df[column][0]).all():
                 df.pop(column)
         
         #create a csv file from dataframe
