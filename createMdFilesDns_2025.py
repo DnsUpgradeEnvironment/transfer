@@ -211,8 +211,6 @@ def getAddInfo3(ind, lang):
             re = "Für Indikator 15.4 stehen noch keine Daten zur Verfügung. Die Darstellung dient der Visualisierung."
         elif ind == "12.3.a,b,c":
             re = "Für Indikator 12.3.c stehen noch keine Daten zur Verfügung. Die Darstellung dient der Visualisierung."
-        elif ind == "03.3":
-            re = "Für Indikator 3.3 stehen noch keine Daten zur Verfügung. Die Darstellung dient der Visualisierung."
         return re
     else:
         return re
@@ -863,17 +861,17 @@ def getWeatherFct(index, lang):
                             re += '\nweather_indicator_' + str(counter) + '_target_' + str(targetCounter) + '_note: ' + txtFct('false', 'true', dfI.loc[target, 'Anmerkung' + lang], lang)
                     
                     # graph_target_points from here
+                    # get graph type first
+                    
+                    if pd.isnull(meta.loc[index, 'Grafiktyp 1 Spezifikation']):
+                        graphType = meta.loc[index, 'Grafiktyp 1']
+                    else:
+                        for i in ['1', '2', '3']:
+                            if meta.loc[index, 'Grafiktyp ' + i + ' Spezifikation'] == dfI.loc[target, 'Spezifikation'] or meta.loc[index, 'Grafiktyp ' + i + ' Spezifikation'] == dfI.loc[target, 'INr']:
+                                graphType = meta.loc[index, 'Grafiktyp ' + i]
+                    
                     if dfI.loc[target, 'InGrafikAnzeigen?']:
-                        #if pd.isnull(dfI.loc[target, 'Gültig bis']):
-                        # find graph type
-                        if pd.isnull(meta.loc[index, 'Grafiktyp 1 Spezifikation']):
-                            graphType = meta.loc[index, 'Grafiktyp 1']
-                        else:
-                            for i in ['1', '2', '3']:
-                                if index == "12.3.a,b,c":
-                                    print(target, dfI.loc[target, 'Spezifikation'])
-                                if meta.loc[index, 'Grafiktyp ' + i + ' Spezifikation'] == dfI.loc[target, 'Spezifikation']:
-                                    graphType = meta.loc[index, 'Grafiktyp ' + i]
+                        
                         # start writing
                         reTp += '\n  - '
                         reTL += '\n  - '
@@ -1239,8 +1237,8 @@ for page in meta.index:                                                         
         \n\n\n#Metadata\
         \nnational_indicator_available: " + txtFct('false', 'true', meta.loc[page, 'Tab_4a_Indikatorenblätter.BezDe'], 'De') + "\
         \n\ndns_indicator_definition: " + txtFct('true', 'true', meta.loc[page, 'DefinitionDe'], 'De') + "\
-        \n\ndns_indicator_definition_new: " + txtFct('true', 'true', meta.loc[page, 'DefinitionNeuDe'], 'De') + "\
         \n\ndns_indicator_intention: "+ txtFct('true', 'true', meta.loc[page, 'IntentionDe'], 'De') +"\
+        \n\ndns_indicator_definition_new: " + txtFct('true', 'true', meta.loc[page, 'DefinitionNeuDe'], 'De') + "\
         \n\ndns_political_intention: \
         \n\npolitical_target: " + txtFct('true', 'true', meta.loc[page, 'PolitischesZielDe'], 'De') +"\
         \n\ntype_target: " + txtFct('true', 'true', meta.loc[page, 'ZielartDe'], 'De') +"\
@@ -1268,7 +1266,7 @@ for page in meta.index:                                                         
         \n\n" + getSpecifiedStuff(page, 'Dezimalstellen', 4, 'decimals', '', '') +"\
         \n\nspan_gaps: " + str(meta.loc[page, 'Lücken füllen?']).lower() + "\
         \nshow_line: " + str(meta.loc[page, 'Linie anzeigen?']).lower() + "\
-        \n\n" +  getSpecifiedStuff(page, 'Grafiktyp', 3, 'type', '', '') + "\
+        \n\n" +  getSpecifiedStuff(page, 'Grafiktyp', 4, 'type', '', '') + "\
         " + getStartValues(page) +"\
         \n\n" + getSpecifiedStuff(page, 'Achsenlimit', 4, 'minimum', 'maximum', '') + "\
         \n\n" + getSpecifiedStuff(page, 'Schrittweite y-Achse', 4, 'step', '', '') + "\
